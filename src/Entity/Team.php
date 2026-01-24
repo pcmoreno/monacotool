@@ -140,10 +140,7 @@ class Team
             $squaredVariance = $variance * $variance;
             $sumOfVarianceForAllDataPoints += $squaredVariance;
         }
-        $count = $iterations->count();
 
-        $almost = $sumOfVarianceForAllDataPoints / ($count - 1);
-
-        return sqrt($almost);
+        return sqrt($sumOfVarianceForAllDataPoints / ($iterations->count() - 1));
     }
 }
