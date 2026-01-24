@@ -114,4 +114,36 @@ class Team
 
         return $this;
     }
+
+    public function getOutputAverage(): float
+    {
+        if ($this->iterations->isEmpty()) {
+            return 0;
+        }
+
+        $count = $this->iterations->count();
+        $sum = 0;
+        foreach ($this->iterations as $iteration) {
+            $sum += $iteration->getOutput();
+        }
+
+        return $sum / $count;
+    }
+
+    public function getStandardDeviation(): float
+    {
+        $iterations = $this->iterations;
+        $mean = $this->getOutputAverage();
+        $sumOfVarianceForAllDataPoints = 0;
+        foreach ($iterations as $iteration) {
+            $variance = $iteration->getOutput() - $mean;
+            $squaredVariance = $variance * $variance;
+            $sumOfVarianceForAllDataPoints += $squaredVariance;
+        }
+        $count = $iterations->count();
+
+        $almost = $sumOfVarianceForAllDataPoints / ($count - 1);
+
+        return sqrt($almost);
+    }
 }
