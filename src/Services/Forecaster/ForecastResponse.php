@@ -2,7 +2,9 @@
 
 namespace App\Services\Forecaster;
 
-class ForecastResponse
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+class ForecastResponse extends JsonResponse
 {
 
 }

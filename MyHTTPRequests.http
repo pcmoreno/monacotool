@@ -1,0 +1,9 @@
+POST http://127.0.0.1:8000/team/1/forecast
+Content-Type: application/x-www-form-urlencoded
+
+target_iteration = 8 &
+target_output = 80
+
+###
+
+

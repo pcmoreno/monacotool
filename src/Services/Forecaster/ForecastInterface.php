@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Forecaster;
 
 use App\Entity\Forecast;
 use App\Entity\Team;
