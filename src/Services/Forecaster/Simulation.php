@@ -33,7 +33,7 @@ class Simulation
     {
         $x = mt_rand()/mt_getrandmax();
         $y = mt_rand()/mt_getrandmax();
-        return (int) round(sqrt(-2*log($x))*cos(2*pi()*$y)*$sd + $mean, 0, PHP_ROUND_HALF_UP);
+        return (int)round(sqrt(-2 * log($x)) * cos(2 * pi() * $y) * $sd + $mean, 0, PHP_ROUND_HALF_UP);
     }
 
     public function getIterations(): array
