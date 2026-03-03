@@ -21,6 +21,7 @@
 ###< symfony/asset-mapper ###
 
 /.idea
+/MyHTTPRequests.http
 
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
