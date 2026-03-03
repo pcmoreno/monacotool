@@ -10,10 +10,16 @@ use App\Entity\Team;
 
 class BasicForecaster implements ForecastInterface
 {
-    private const NUMBER_OF_SIMULATIONS = 10000;
+    private int $numberOfSimulations;
 
     /** @var Iteration[] $iterations */
     private array $iterations;
+
+    public function __construct(int $numberOfSimulations)
+    {
+        $this->numberOfSimulations = $numberOfSimulations;
+    }
+
     public function forecast(Team $team, int $numberOfIterations, int $outputAmount): Forecast
     {
         $simulations = $this->createSimulations($team, $numberOfIterations);
@@ -23,7 +29,7 @@ class BasicForecaster implements ForecastInterface
         $forecast = new Forecast();
         $forecast->setTeam($team);
         $forecast->setResult($probability);
-        $forecast->setNumberOfSimulations(self::NUMBER_OF_SIMULATIONS);
+        $forecast->setNumberOfSimulations($this->numberOfSimulations);
         $forecast->setTargetIterations($numberOfIterations);
         $forecast->setTargetOutput($outputAmount);
 
@@ -33,7 +39,7 @@ class BasicForecaster implements ForecastInterface
     private function createSimulations(Team $team, int $numberOfIterations): array
     {
         $simulations = [];
-        for ($i = 0; $i < self::NUMBER_OF_SIMULATIONS; $i++) {
+        for ($i = 0; $i < $this->numberOfSimulations; $i++) {
             $simulation = new Simulation($numberOfIterations, $team);
             $simulation->simulate();
             $simulations[] = array_sum($simulation->getIterations());

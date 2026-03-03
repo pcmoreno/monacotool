@@ -16,8 +16,8 @@ class BasicForecasterTest extends TestCase
         $team->method('getOutputAverage')->willReturn(10.0);
         $team->method('getStandardDeviation')->willReturn(2.5);
 
-        $forecaster = new BasicForecaster();
+        $forecaster = new BasicForecaster(1000);
         $forecast = $forecaster->forecast($team, 10, 110);
-        dd($forecast);
+        $this->assertTrue($forecast->getResult() < 15);
     }
 }

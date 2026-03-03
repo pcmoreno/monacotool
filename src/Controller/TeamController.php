@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class TeamController extends AbstractController
 {
-
     private ForecastInterface $forecaster;
+
     public function __construct(ForecastInterface $forecaster)
     {
         $this->forecaster = $forecaster;
@@ -33,7 +33,9 @@ final class TeamController extends AbstractController
     #[Route('/team/{id}', name: 'app_team_show', methods: ['GET'])]
     public function show(Team $team): Response
     {
-        return $this->render('team/show.html.twig', [
+        return $this->render(
+            'team/show.html.twig',
+            [
                 'team' => $team,
                 'outputAverage' => $team->getOutputAverage(),
                 'standardDeviation' => $team->getStandardDeviation(),
@@ -44,21 +46,19 @@ final class TeamController extends AbstractController
     #[Route('/team/{id}/forecast', name: 'app_team_forecast', methods: ['POST'])]
     public function requestForecast(Request $request, Team $team): Response
     {
-        $requestedTargetOutput = (int)($request->getPayload()->get('target_output'));
-        $requestedTargetIteration = (int)($request->getPayload()->get('target_iteration'));
+        $requestedTargetOutput = (int) $request->getPayload()->get('target_output');
+        $requestedTargetIteration = (int) $request->getPayload()->get('target_iteration');
 
         $forecast = $this->forecaster->forecast($team, $requestedTargetIteration, $requestedTargetOutput);
 
-        return new ForecastResponse(
-            data: [
-                [
-                    'probability of success' => $forecast->getResult(),
-                    'team velocity' => $forecast->getTeam()->getOutputAverage(),
-                    'team standard deviation' => $forecast->getTeam()->getStandardDeviation(),
-                ],
-                $requestedTargetIteration, $requestedTargetOutput]
-            ,
-            status: Response::HTTP_OK
-        );
+        return ForecastResponse::create($forecast, $requestedTargetIteration, $requestedTargetOutput);
+    }
+
+    #[Route('/team/{id}/forecasts', name: 'app_team_forecasts', methods: ['POST'])]
+    public function requestForecasts(Request $request, Team $team): Response
+    {
+        $requestedTargetOutput = (int) $request->getPayload()->get('target_output');
+        // TODO
+        return new JsonResponse();
     }
 }
