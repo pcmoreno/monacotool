@@ -166,7 +166,7 @@ class Team
         return $sum / $count;
     }
 
-    public function getStandardDeviation(): float
+    public function getSampleStandardDeviation(): float
     {
         $iterations = $this->iterations;
         $mean = $this->getOutputAverage();

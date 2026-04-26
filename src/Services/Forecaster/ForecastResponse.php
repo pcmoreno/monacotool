@@ -18,7 +18,7 @@ final class ForecastResponse extends JsonResponse
                 [
                     'Probability of success' => $forecast->getResult(),
                     'Team velocity' => $forecast->getTeam()->getOutputAverage(),
-                    'Team standard deviation' => $forecast->getTeam()->getStandardDeviation(),
+                    'Team standard deviation' => $forecast->getTeam()->getSampleStandardDeviation(),
                     'Target Iteration' => $requestedTargetIteration,
                     'Target Output' => $requestedTargetOutput,
                 ],
