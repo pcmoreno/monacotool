@@ -32,10 +32,17 @@ class Team
     #[ORM\OneToMany(targetEntity: Forecast::class, mappedBy: 'team')]
     private Collection $forecasts;
 
+    /**
+     * @var Collection<int, Membership>
+     */
+    #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'team', cascade: ['persist', 'remove'])]
+    private Collection $memberships;
+
     public function __construct()
     {
         $this->iterations = new ArrayCollection();
         $this->forecasts = new ArrayCollection();
+        $this->memberships = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -48,7 +55,7 @@ class Team
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(?string $name): self
     {
         $this->name = $name;
 
@@ -63,7 +70,7 @@ class Team
         return $this->iterations;
     }
 
-    public function addIteration(Iteration $iteration): static
+    public function addIteration(Iteration $iteration): self
     {
         if (!$this->iterations->contains($iteration)) {
             $this->iterations->add($iteration);
@@ -73,7 +80,7 @@ class Team
         return $this;
     }
 
-    public function removeIteration(Iteration $iteration): static
+    public function removeIteration(Iteration $iteration): self
     {
         if ($this->iterations->removeElement($iteration)) {
             // set the owning side to null (unless already changed)
@@ -93,7 +100,7 @@ class Team
         return $this->forecasts;
     }
 
-    public function addForecast(Forecast $forecast): static
+    public function addForecast(Forecast $forecast): self
     {
         if (!$this->forecasts->contains($forecast)) {
             $this->forecasts->add($forecast);
@@ -103,12 +110,41 @@ class Team
         return $this;
     }
 
-    public function removeForecast(Forecast $forecast): static
+    public function removeForecast(Forecast $forecast): self
     {
         if ($this->forecasts->removeElement($forecast)) {
             // set the owning side to null (unless already changed)
             if ($forecast->getTeam() === $this) {
                 $forecast->setTeam(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Membership>
+     */
+    public function getMemberships(): Collection
+    {
+        return $this->memberships;
+    }
+
+    public function addMembership(Membership $membership): self
+    {
+        if (!$this->memberships->contains($membership)) {
+            $this->memberships->add($membership);
+            $membership->setTeam($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMembership(Membership $membership): self
+    {
+        if ($this->memberships->removeElement($membership)) {
+            if ($membership->getTeam() === $this) {
+                $membership->setTeam(null);
             }
         }
 
