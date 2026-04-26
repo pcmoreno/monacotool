@@ -169,6 +169,11 @@ class Team
     public function getSampleStandardDeviation(): float
     {
         $iterations = $this->iterations;
+
+        if ($iterations->count() < 2) {
+            return 0.0;
+        }
+
         $mean = $this->getOutputAverage();
         $sumOfVarianceForAllDataPoints = 0;
         foreach ($iterations as $iteration) {
