@@ -23,7 +23,7 @@ class Simulation
     {
         for ($i = 0; $i < $this->numberOfIterations; $i++) {
             $iteration = $this->getRandomNumberWithNormalDistribution(
-                $this->team->getOutputAverage(), $this->team->getStandardDeviation()
+                $this->team->getOutputAverage(), $this->team->getSampleStandardDeviation()
             );
             $this->iterations[] = $iteration;
         }

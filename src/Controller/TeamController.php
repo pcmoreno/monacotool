@@ -38,7 +38,7 @@ final class TeamController extends AbstractController
             [
                 'team' => $team,
                 'outputAverage' => $team->getOutputAverage(),
-                'standardDeviation' => $team->getStandardDeviation(),
+                'standardDeviation' => $team->getSampleStandardDeviation(),
             ]
         );
     }
