@@ -1,5 +1,3 @@
-const iconTrash = document.getElementById('icon-trash').innerHTML;
-
 const inputClass = (extra = '') =>
     'w-full border border-primary-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-surface' + (extra ? ' ' + extra : '');
 
@@ -23,7 +21,7 @@ const makeEditableRow = (id, endDate, output, tbody) => {
     tr.dataset.iterationId = id;
     tr.innerHTML = `
         <td class="py-2.5 px-1">
-            <button type="button" data-delete-iteration="${id}" class="text-graphite-400 hover:text-red-500 transition">${iconTrash}</button>
+            <button type="button" data-delete-iteration="${id}" class="text-graphite-400 hover:text-red-500 transition">${globalThis.icons.trash}</button>
         </td>
         <td class="py-2.5 text-graphite-600 cursor-pointer hover:bg-primary-50 rounded px-1 transition"
             data-editable data-field="end_date" data-iteration-id="${id}" data-value="${endDate}">${endDate}</td>

@@ -1,4 +1,9 @@
 const confirmModal = document.getElementById('confirm-delete-modal');
+globalThis.icons = {
+    trash: document.getElementById('icon-trash').innerHTML,
+    magnifier: document.getElementById('icon-magnifier').innerHTML,
+};
+
 let onConfirmCallback = null;
 
 document.getElementById('confirm-delete-cancel').addEventListener('click', () => {

@@ -1,37 +1,34 @@
-const modal = document.getElementById('forecast-modal');
-const backdrop = document.getElementById('forecast-backdrop');
-const openBtn = document.getElementById('open-forecast-modal');
-const submitBtn = document.getElementById('forecast-submit');
-const outputInput = document.getElementById('forecast-target-output');
-const iterationsInput = document.getElementById('forecast-target-iterations');
+const forecastModal = document.getElementById('forecast-modal');
+const forecastBackdrop = document.getElementById('forecast-backdrop');
+const forecastOpenBtn = document.getElementById('open-forecast-modal');
+const forecastSubmitBtn = document.getElementById('forecast-submit');
+const forecastOutputInput = document.getElementById('forecast-target-output');
+const forecastIterationsInput = document.getElementById('forecast-target-iterations');
 
-const iconTrash = document.getElementById('icon-trash').innerHTML;
-const iconMagnifier = document.getElementById('icon-magnifier').innerHTML;
-
-const open = () => {
-    modal.classList.remove('hidden');
-    outputInput.focus();
+const openForecast = () => {
+    forecastModal.classList.remove('hidden');
+    forecastOutputInput.focus();
 };
 
-const close = () => {
-    modal.classList.add('hidden');
-    outputInput.value = '';
-    iterationsInput.value = '';
+const closeForecast = () => {
+    forecastModal.classList.add('hidden');
+    forecastOutputInput.value = '';
+    forecastIterationsInput.value = '';
 };
 
-openBtn.addEventListener('click', open);
-backdrop.addEventListener('click', close);
-document.getElementById('close-forecast-modal').addEventListener('click', close);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+forecastOpenBtn.addEventListener('click', openForecast);
+forecastBackdrop.addEventListener('click', closeForecast);
+document.getElementById('close-forecast-modal').addEventListener('click', closeForecast);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeForecast(); });
 
-submitBtn.addEventListener('click', async () => {
-    const teamId = submitBtn.dataset.teamId;
-    const targetOutput = parseInt(outputInput.value, 10);
-    const targetIterations = parseInt(iterationsInput.value, 10);
+forecastSubmitBtn.addEventListener('click', async () => {
+    const teamId = forecastSubmitBtn.dataset.teamId;
+    const targetOutput = parseInt(forecastOutputInput.value, 10);
+    const targetIterations = parseInt(forecastIterationsInput.value, 10);
 
     if (!targetOutput || targetOutput < 1 || !targetIterations || targetIterations < 1) return;
 
-    submitBtn.disabled = true;
+    forecastSubmitBtn.disabled = true;
 
     try {
         const response = await fetch(`/team/${teamId}/forecast`, {
@@ -42,11 +39,11 @@ submitBtn.addEventListener('click', async () => {
 
         if (response.ok) {
             const data = await response.json();
-            close();
+            closeForecast();
             addForecastRow(data);
         }
     } finally {
-        submitBtn.disabled = false;
+        forecastSubmitBtn.disabled = false;
     }
 });
 
@@ -66,8 +63,8 @@ const addForecastRow = (forecast) => {
     tr.innerHTML = `
         <td class="py-2.5">
             <div class="flex items-center gap-2">
-                <button type="button" class="text-graphite-400 hover:text-graphite-600 transition">${iconMagnifier}</button>
-                <button type="button" data-delete-forecast="${forecast.id}" class="text-graphite-400 hover:text-red-500 transition">${iconTrash}</button>
+                <button type="button" class="text-graphite-400 hover:text-graphite-600 transition">${globalThis.icons.magnifier}</button>
+                <button type="button" data-delete-forecast="${forecast.id}" class="text-graphite-400 hover:text-red-500 transition">${globalThis.icons.trash}</button>
             </div>
         </td>
         <td class="py-2.5 text-graphite-600">${forecast.createdAt}</td>
