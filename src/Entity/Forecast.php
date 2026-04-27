@@ -27,8 +27,16 @@ class Forecast
     #[ORM\Column(nullable: true)]
     private ?float $result = null;
 
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
+
     #[ORM\ManyToOne(inversedBy: 'forecasts')]
     private ?Team $team = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -81,6 +89,11 @@ class Forecast
         $this->result = $result;
 
         return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
     public function getTeam(): ?Team
