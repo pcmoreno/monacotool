@@ -1,1 +1,79 @@
 @import "tailwindcss";
+
+@theme {
+  /* Primary — the main interactive/action color */
+  --color-primary-50:  #eef2ff;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+
+  /* Graphite — text, borders, and neutral surfaces */
+  --color-graphite-50:  #f9fafb;
+  --color-graphite-100: #f3f4f6;
+  --color-graphite-200: #e5e7eb;
+  --color-graphite-300: #d1d5db;
+  --color-graphite-400: #9ca3af;
+  --color-graphite-500: #6b7280;
+  --color-graphite-600: #4b5563;
+  --color-graphite-700: #374151;
+  --color-graphite-900: #111827;
+
+  /* Surface — card, modal, and form backgrounds */
+  --color-surface: #ffffff;
+
+  /* Header — isolated palette so the header stays dark in every theme */
+  --color-header-bg:    #111827;
+  --color-header-fg:    #ffffff;
+  --color-header-muted: #9ca3af;
+  --color-header-hover: #1f2937;
+}
+
+/* ── Dark theme ─────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-primary-50:  #1e1b4b;
+  --color-primary-400: #a5b4fc;
+  --color-primary-500: #818cf8;
+  --color-primary-600: #6366f1;
+
+  --color-graphite-50:  #0f172a;
+  --color-graphite-100: #1e293b;
+  --color-graphite-200: #334155;
+  --color-graphite-300: #475569;
+  --color-graphite-400: #94a3b8;
+  --color-graphite-500: #cbd5e1;
+  --color-graphite-600: #e2e8f0;
+  --color-graphite-700: #f1f5f9;
+  --color-graphite-900: #f8fafc;
+
+  --color-surface: #1e293b;
+
+  --color-header-bg:    #020617;
+  --color-header-fg:    #f8fafc;
+  --color-header-muted: #64748b;
+  --color-header-hover: #0f172a;
+}
+
+/* ── Forest theme ────────────────────────────────────────────── */
+[data-theme="forest"] {
+  --color-primary-50:  #f0fdf4;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #16a34a;
+
+  --color-graphite-50:  #f6faf6;
+  --color-graphite-100: #eaf3ea;
+  --color-graphite-200: #d0e8d0;
+  --color-graphite-300: #aecfae;
+  --color-graphite-400: #6b8f6b;
+  --color-graphite-500: #4a6a4a;
+  --color-graphite-600: #375537;
+  --color-graphite-700: #2a4228;
+  --color-graphite-900: #162016;
+
+  --color-surface: #ffffff;
+
+  --color-header-bg:    #14532d;
+  --color-header-fg:    #ffffff;
+  --color-header-muted: #86efac;
+  --color-header-hover: #166534;
+}

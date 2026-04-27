@@ -1,0 +1,201 @@
+const iconTrash = document.getElementById('icon-trash').innerHTML;
+
+const inputClass = (extra = '') =>
+    'w-full border border-primary-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-surface' + (extra ? ' ' + extra : '');
+
+const updateStats = (data) => {
+    document.getElementById('stat-velocity').textContent = data.outputAverage.toFixed(1);
+    document.getElementById('stat-std-dev').textContent = data.standardDeviation.toFixed(3);
+};
+
+const sortTableByDate = (tbody) => {
+    const trigger = document.getElementById('add-iteration-trigger');
+    const rows = Array.from(tbody.querySelectorAll('tr:not(#add-iteration-trigger)'));
+    rows.sort((a, b) =>
+        a.querySelector('[data-field="end_date"]').dataset.value
+            .localeCompare(b.querySelector('[data-field="end_date"]').dataset.value)
+    );
+    rows.forEach(row => tbody.insertBefore(row, trigger));
+};
+
+const makeEditableRow = (id, endDate, output, tbody) => {
+    const tr = document.createElement('tr');
+    tr.dataset.iterationId = id;
+    tr.innerHTML = `
+        <td class="py-2.5 px-1">
+            <button type="button" data-delete-iteration="${id}" class="text-graphite-400 hover:text-red-500 transition">${iconTrash}</button>
+        </td>
+        <td class="py-2.5 text-graphite-600 cursor-pointer hover:bg-primary-50 rounded px-1 transition"
+            data-editable data-field="end_date" data-iteration-id="${id}" data-value="${endDate}">${endDate}</td>
+        <td class="py-2.5 text-graphite-900 font-semibold text-right cursor-pointer hover:bg-primary-50 rounded px-1 transition"
+            data-editable data-field="output" data-iteration-id="${id}" data-value="${output}">${output}</td>
+    `;
+    tbody.insertBefore(tr, document.getElementById('add-iteration-trigger'));
+    tr.querySelectorAll('[data-editable]').forEach(attachEditHandler);
+    return tr;
+};
+
+const attachEditHandler = (cell) => {
+    cell.addEventListener('click', () => {
+        if (cell.querySelector('input')) return;
+
+        const { field, iterationId, value } = cell.dataset;
+        const originalText = cell.textContent.trim();
+
+        const input = document.createElement('input');
+        input.type = field === 'output' ? 'number' : 'date';
+        input.value = value;
+        input.className = inputClass(field === 'output' ? 'text-right font-semibold' : '');
+
+        cell.textContent = '';
+        cell.appendChild(input);
+        input.focus();
+
+        let committed = false;
+
+        const save = async () => {
+            const newValue = input.value.trim();
+
+            if (field === 'output') {
+                const parsed = parseInt(newValue, 10);
+                if (newValue === '' || isNaN(parsed) || parsed < 0) { cell.textContent = originalText; return; }
+            } else {
+                if (!newValue) { cell.textContent = originalText; return; }
+            }
+
+            const body = {};
+            body[field] = field === 'output' ? parseInt(newValue, 10) : newValue;
+
+            try {
+                const response = await fetch(`/iteration/${iterationId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    cell.dataset.value = newValue;
+                    cell.textContent = newValue;
+                    updateStats(data);
+                    if (field === 'end_date') sortTableByDate(cell.closest('tbody'));
+                } else {
+                    cell.textContent = originalText;
+                }
+            } catch {
+                cell.textContent = originalText;
+            }
+        };
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
+            if (e.key === 'Escape') { committed = true; cell.textContent = originalText; }
+        });
+        input.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
+    });
+};
+
+document.querySelectorAll('[data-editable]').forEach(attachEditHandler);
+
+const iterationsTbody = document.querySelector('[data-team-id] tbody');
+
+iterationsTbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-delete-iteration]');
+    if (!btn) return;
+
+    const iterationId = btn.dataset.deleteIteration;
+    const row = btn.closest('tr');
+
+    globalThis.showDeleteConfirm(async () => {
+        const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE' });
+
+        if (response.ok) {
+            row.remove();
+            const data = await response.json();
+            updateStats(data);
+        }
+    });
+});
+
+const trigger = document.getElementById('add-iteration-trigger');
+if (trigger) {
+    trigger.addEventListener('click', () => {
+        if (trigger.querySelector('input')) return;
+
+        const tbody = trigger.closest('tbody');
+        const teamId = trigger.closest('[data-team-id]').dataset.teamId;
+
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.className = inputClass();
+
+        const outputInput = document.createElement('input');
+        outputInput.type = 'number';
+        outputInput.min = '0';
+        outputInput.className = inputClass('text-right font-semibold');
+
+        const dateTd = trigger.cells[0];
+        dateTd.colSpan = 1;
+        dateTd.className = 'py-2 px-1';
+        dateTd.textContent = '';
+        dateTd.appendChild(dateInput);
+
+        const outputTd = document.createElement('td');
+        outputTd.className = 'py-2 px-1';
+        outputTd.appendChild(outputInput);
+        trigger.appendChild(outputTd);
+
+        dateInput.focus();
+
+        let committed = false;
+
+        const save = async () => {
+            const endDate = dateInput.value.trim();
+            const outputVal = outputInput.value.trim();
+            const parsed = parseInt(outputVal, 10);
+
+            if (!endDate || outputVal === '' || isNaN(parsed) || parsed < 0) {
+                resetTrigger(dateTd);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/team/${teamId}/iteration`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ end_date: endDate, output: parsed }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resetTrigger(dateTd);
+                    makeEditableRow(data.id, data.endDate, data.output, tbody);
+                    sortTableByDate(tbody);
+                    updateStats(data);
+                } else {
+                    resetTrigger(dateTd);
+                }
+            } catch {
+                resetTrigger(dateTd);
+            }
+        };
+
+        const resetTrigger = (dateTd) => {
+            committed = true;
+            if (trigger.cells.length > 1) trigger.deleteCell(1);
+            dateTd.colSpan = 3;
+            dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-lg font-light select-none';
+            dateTd.textContent = '+';
+        };
+
+        outputInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
+            if (e.key === 'Escape') resetTrigger(dateTd);
+        });
+        outputInput.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
+        dateInput.addEventListener('keydown', e => {
+            if (e.key === 'Tab') return;
+            if (e.key === 'Escape') resetTrigger(dateTd);
+        });
+    });
+}

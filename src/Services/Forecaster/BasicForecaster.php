@@ -58,6 +58,6 @@ class BasicForecaster implements ForecastInterface
             }
         }
 
-        return 100 * ($countSuccessful / count($simulations));
+        return $countSuccessful / count($simulations);
     }
 }

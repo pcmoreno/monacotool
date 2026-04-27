@@ -24,6 +24,7 @@ class Team
      * @var Collection<int, Iteration>
      */
     #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team')]
+    #[ORM\OrderBy(['EndDate' => 'ASC'])]
     private Collection $iterations;
 
     /**

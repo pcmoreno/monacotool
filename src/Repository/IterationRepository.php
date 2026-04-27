@@ -18,28 +18,15 @@ class IterationRepository extends ServiceEntityRepository
         parent::__construct($registry, Iteration::class);
     }
 
-    //    /**
-    //     * @return Iteration[] Returns an array of Iteration objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('i.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function save(Iteration $iteration): void
+    {
+        $this->getEntityManager()->persist($iteration);
+        $this->getEntityManager()->flush();
+    }
 
-    //    public function findOneBySomeField($value): ?Iteration
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function delete(Iteration $iteration): void
+    {
+        $this->getEntityManager()->remove($iteration);
+        $this->getEntityManager()->flush();
+    }
 }
