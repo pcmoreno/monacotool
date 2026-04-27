@@ -92,7 +92,11 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xs font-semibold text-graphite-400 uppercase tracking-widest">Forecasts</h2>
                 <button id="open-forecast-modal" type="button"
-                        class="rounded-md bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-primary-500 transition">
+                        {% if team.iterations|length < 2 %}
+                            disabled
+                            title="At least 2 iterations are required to run a forecast."
+                        {% endif %}
+                        class="rounded-md bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-primary-500 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-600">
                     Request Forecast
                 </button>
             </div>
@@ -184,7 +188,7 @@
 <template id="icon-trash">{% include 'icons/trash.html.twig' %}</template>
 <template id="icon-magnifier">{% include 'icons/magnifier.html.twig' %}</template>
 
-<script src="{{ asset('delete-confirm.js') }}"></script>
-<script src="{{ asset('iteration-edit.js') }}"></script>
-<script src="{{ asset('forecast-modal.js') }}"></script>
+<script type="module" src="{{ asset('delete-confirm.js') }}"></script>
+<script type="module" src="{{ asset('iteration-edit.js') }}"></script>
+<script type="module" src="{{ asset('forecast-modal.js') }}"></script>
 {% endblock %}
