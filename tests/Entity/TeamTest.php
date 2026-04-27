@@ -24,6 +24,12 @@ class TeamTest extends TestCase
         $this->assertSame(20.0, $team->getOutputAverage());
     }
 
+    public function test_standard_deviation_returns_zero_with_fewer_than_two_iterations(): void
+    {
+        $this->assertSame(0.0, (new Team())->getSampleStandardDeviation());
+        $this->assertSame(0.0, $this->teamWithOutputs(5)->getSampleStandardDeviation());
+    }
+
     public function test_standard_deviation_is_correct(): void
     {
         // {1..10}: mean=5.5, sum sq dev=82.5, sample std dev=sqrt(82.5/9)≈3.0277
