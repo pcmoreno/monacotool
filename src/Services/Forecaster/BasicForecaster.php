@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Forecaster;
 
 use App\Entity\Forecast;
-use App\Entity\Iteration;
 use App\Entity\Team;
 
 class BasicForecaster implements ForecastInterface
 {
     private int $numberOfSimulations;
-
-    /** @var Iteration[] $iterations */
-    private array $iterations;
 
     public function __construct(int $numberOfSimulations)
     {
@@ -45,7 +41,6 @@ class BasicForecaster implements ForecastInterface
             $simulations[] = array_sum($simulation->getIterations());
         }
 
-        asort($simulations);
         return $simulations;
     }
 

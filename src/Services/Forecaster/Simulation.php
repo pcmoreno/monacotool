@@ -31,9 +31,9 @@ class Simulation
 
     private function getRandomNumberWithNormalDistribution($mean, $sd): int
     {
-        $x = mt_rand()/mt_getrandmax();
-        $y = mt_rand()/mt_getrandmax();
-        return (int)round(sqrt(-2 * log($x)) * cos(2 * pi() * $y) * $sd + $mean, 0, PHP_ROUND_HALF_UP);
+        $x = 1 - mt_rand() / mt_getrandmax(); // (0, 1] to avoid log(0)
+        $y = mt_rand() / mt_getrandmax();
+        return max(0, (int) round(sqrt(-2 * log($x)) * cos(2 * pi() * $y) * $sd + $mean, 0, PHP_ROUND_HALF_UP));
     }
 
     public function getIterations(): array
