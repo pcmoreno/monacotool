@@ -7,12 +7,12 @@ namespace App\Controller;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Request\ForecastRequest;
+use App\Request\TeamCreateRequest;
 use App\Security\TeamVoter;
 use App\Services\Forecaster\ForecastService;
 use App\Services\TeamService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,19 +29,12 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team', name: 'app_team_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload] TeamCreateRequest $teamCreateRequest): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        $data = json_decode($request->getContent(), true);
-        $name = trim($data['name'] ?? '');
-
-        if ($name === '') {
-            return new JsonResponse(['error' => 'Name is required.'], 400);
-        }
-
-        $team = $this->teamService->create($name, $user);
+        $team = $this->teamService->create($teamCreateRequest->name, $user);
 
         return new JsonResponse(['id' => $team->getId(), 'name' => $team->getName()], 201);
     }

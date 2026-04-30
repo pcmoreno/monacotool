@@ -6,11 +6,13 @@ namespace App\Controller;
 
 use App\Entity\Iteration;
 use App\Entity\Team;
+use App\Request\IterationCreateRequest;
+use App\Request\IterationUpdateRequest;
 use App\Security\TeamVoter;
 use App\Services\IterationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
@@ -22,27 +24,12 @@ final class IterationController extends AbstractController
     }
 
     #[Route('/team/{id}/iteration', name: 'app_iteration_create', methods: ['POST'])]
-    public function create(Request $request, Team $team): JsonResponse
+    public function create(#[MapRequestPayload] IterationCreateRequest $iterationCreateRequest, Team $team): JsonResponse
     {
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
-        $data = json_decode($request->getContent(), true);
-
-        if (!is_array($data)) {
-            return new JsonResponse(['error' => 'Invalid request body.'], 400);
-        }
-
-        $output = filter_var($data['output'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
-        if ($output === false) {
-            return new JsonResponse(['error' => 'Output must be a non-negative integer.'], 400);
-        }
-
-        $endDate = \DateTime::createFromFormat('Y-m-d', $data['end_date'] ?? '');
-        if ($endDate === false) {
-            return new JsonResponse(['error' => 'End date must be in Y-m-d format.'], 400);
-        }
-
-        $iteration = $this->iterationService->create($team, $output, $endDate);
+        $endDate = \DateTimeImmutable::createFromFormat('Y-m-d', $iterationCreateRequest->endDate);
+        $iteration = $this->iterationService->create($team, $iterationCreateRequest->output, $endDate);
 
         return new JsonResponse([
             'id' => $iteration->getId(),
@@ -54,37 +41,19 @@ final class IterationController extends AbstractController
     }
 
     #[Route('/iteration/{id}', name: 'app_iteration_update', methods: ['PATCH'])]
-    public function update(Request $request, Iteration $iteration): JsonResponse
+    public function update(#[MapRequestPayload] IterationUpdateRequest $iterationUpdateRequest, Iteration $iteration): JsonResponse
     {
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $iteration->getTeam());
 
-        $data = json_decode($request->getContent(), true);
-
-        if (!is_array($data)) {
-            return new JsonResponse(['error' => 'Invalid request body.'], 400);
+        if ($iterationUpdateRequest->output === null && $iterationUpdateRequest->endDate === null) {
+            return new JsonResponse(['error' => 'Nothing to update.'], 422);
         }
 
-        $output = null;
-        if (array_key_exists('output', $data)) {
-            $output = filter_var($data['output'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
-            if ($output === false) {
-                return new JsonResponse(['error' => 'Output must be a non-negative integer.'], 400);
-            }
-        }
+        $endDate = $iterationUpdateRequest->endDate
+            ? \DateTimeImmutable::createFromFormat('Y-m-d', $iterationUpdateRequest->endDate)
+            : null;
 
-        $endDate = null;
-        if (array_key_exists('end_date', $data)) {
-            $endDate = \DateTime::createFromFormat('Y-m-d', $data['end_date']);
-            if ($endDate === false) {
-                return new JsonResponse(['error' => 'End date must be in Y-m-d format.'], 400);
-            }
-        }
-
-        if ($output === null && $endDate === null) {
-            return new JsonResponse(['error' => 'Nothing to update.'], 400);
-        }
-
-        $this->iterationService->update($iteration, $output, $endDate);
+        $this->iterationService->update($iteration, $iterationUpdateRequest->output, $endDate);
 
         $team = $iteration->getTeam();
 
