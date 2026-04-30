@@ -1,3 +1,5 @@
+import { csrfToken } from './csrf.js';
+
 const inputClass = (extra = '') =>
     'w-full border border-primary-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-surface' + (extra ? ' ' + extra : '');
 
@@ -67,7 +69,7 @@ const attachEditHandler = (cell) => {
             try {
                 const response = await fetch(`/iteration/${iterationId}`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
                     body: JSON.stringify(body),
                 });
 
@@ -105,7 +107,7 @@ iterationsTbody.addEventListener('click', (e) => {
     const row = btn.closest('tr');
 
     globalThis.showDeleteConfirm(async () => {
-        const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE' });
+        const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
 
         if (response.ok) {
             row.remove();
@@ -160,7 +162,7 @@ if (trigger) {
             try {
                 const response = await fetch(`/team/${teamId}/iteration`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
                     body: JSON.stringify({ end_date: endDate, output: parsed }),
                 });
 

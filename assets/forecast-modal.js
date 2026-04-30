@@ -1,3 +1,5 @@
+import { csrfToken } from './csrf.js';
+
 const forecastModal = document.getElementById('forecast-modal');
 const forecastBackdrop = document.getElementById('forecast-backdrop');
 const forecastOpenBtn = document.getElementById('open-forecast-modal');
@@ -33,7 +35,7 @@ forecastSubmitBtn.addEventListener('click', async () => {
     try {
         const response = await fetch(`/team/${teamId}/forecast`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
             body: JSON.stringify({ targetOutput, targetIterations }),
         });
 
@@ -84,7 +86,7 @@ document.getElementById('forecasts-tbody').addEventListener('click', (e) => {
     const row = btn.closest('tr');
 
     globalThis.showDeleteConfirm(async () => {
-        const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE' });
+        const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
 
         if (response.ok) {
             row.remove();
