@@ -1,3 +1,5 @@
+import { csrfToken } from 'csrf';
+
 const teamCreateModal = document.getElementById('team-create-modal');
 const teamCreateBackdrop = document.getElementById('team-create-backdrop');
 const teamCreateNameInput = document.getElementById('team-create-name');
@@ -20,7 +22,7 @@ teamCreateSubmitBtn.addEventListener('click', async () => {
     try {
         const response = await fetch('/team', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
             body: JSON.stringify({ name }),
         });
 

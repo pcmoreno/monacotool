@@ -16,6 +16,9 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'csrf' => [
+        'path' => './assets/csrf.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
