@@ -14,7 +14,7 @@ class IterationService
     {
     }
 
-    public function create(Team $team, int $output, \DateTime $endDate): Iteration
+    public function create(Team $team, int $output, \DateTimeImmutable $endDate): Iteration
     {
         $iteration = new Iteration();
         $iteration->setOutput($output);
@@ -25,7 +25,7 @@ class IterationService
         return $iteration;
     }
 
-    public function update(Iteration $iteration, ?int $output, ?\DateTime $endDate): void
+    public function update(Iteration $iteration, ?int $output, ?\DateTimeImmutable $endDate): void
     {
         if ($output !== null) {
             $iteration->setOutput($output);

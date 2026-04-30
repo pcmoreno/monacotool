@@ -16,13 +16,13 @@ class Iteration
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $EndDate = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $endDate = null;
 
     #[ORM\Column]
-    private ?int $Output = null;
+    private ?int $output = null;
 
-    #[ORM\ManyToOne(inversedBy: 'Iterations')]
+    #[ORM\ManyToOne(inversedBy: 'iterations')]
     private ?Team $team = null;
 
     public function getId(): ?int
@@ -30,26 +30,26 @@ class Iteration
         return $this->id;
     }
 
-    public function getEndDate(): ?\DateTime
+    public function getEndDate(): ?\DateTimeImmutable
     {
-        return $this->EndDate;
+        return $this->endDate;
     }
 
-    public function setEndDate(\DateTime $EndDate): static
+    public function setEndDate(\DateTimeImmutable $endDate): self
     {
-        $this->EndDate = $EndDate;
+        $this->endDate = $endDate;
 
         return $this;
     }
 
     public function getOutput(): ?int
     {
-        return $this->Output;
+        return $this->output;
     }
 
-    public function setOutput(int $Output): static
+    public function setOutput(int $output): self
     {
-        $this->Output = $Output;
+        $this->output = $output;
 
         return $this;
     }
@@ -59,7 +59,7 @@ class Iteration
         return $this->team;
     }
 
-    public function setTeam(?Team $team): static
+    public function setTeam(?Team $team): self
     {
         $this->team = $team;
 

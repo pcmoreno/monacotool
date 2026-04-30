@@ -55,9 +55,11 @@ const addTeamCard = (team) => {
     const a = document.createElement('a');
     a.href = `/team/${team.id}`;
     a.className = 'block rounded-xl bg-surface shadow ring-1 ring-graphite-200 p-6 hover:shadow-md transition';
-    a.innerHTML = `
-        <h2 class="text-lg font-semibold text-graphite-900">${team.name}</h2>
-        <p class="text-sm text-graphite-500 mt-1">0 iterations</p>
-    `;
+
+    const h2 = document.createElement('h2');
+    h2.className = 'text-lg font-semibold text-graphite-900';
+    h2.textContent = team.name;
+
+    a.append(h2);
     grid.appendChild(a);
 };

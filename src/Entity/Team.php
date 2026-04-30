@@ -17,14 +17,14 @@ class Team
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name = null;
+    #[ORM\Column(length: 255)]
+    private string $name;
 
     /**
      * @var Collection<int, Iteration>
      */
     #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team')]
-    #[ORM\OrderBy(['EndDate' => 'ASC'])]
+    #[ORM\OrderBy(['endDate' => 'ASC'])]
     private Collection $iterations;
 
     /**
@@ -51,12 +51,12 @@ class Team
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): self
+    public function setName(string $name): self
     {
         $this->name = $name;
 
