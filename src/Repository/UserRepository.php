@@ -29,12 +29,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function hasSuperAdmin(): bool
     {
-        return $this->createQueryBuilder('u')
-            ->select('COUNT(u.id)')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%"ROLE_SUPER_ADMIN"%')
-            ->getQuery()
-            ->getSingleScalarResult() > 0;
+        foreach ($this->findAll() as $user) {
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
