@@ -83,4 +83,4 @@ The UI ships with three themes — **Light**, **Dark**, and **Forest** — switc
 
 ## Forecasting
 
-The `BasicForecaster` runs N Monte Carlo simulations (configurable via `number_of_simulations` in `services.yaml`). Each simulation samples randomly from the team's historical outputs to project cumulative totals over the target number of iterations. The result is the fraction of simulations that reached or exceeded the target output — a probability between 0 and 1.
+The `BasicForecaster` runs N Monte Carlo simulations (configurable via `number_of_simulations` in `services.yaml`). Each simulation draws from a normal distribution fitted to the team's historical mean and standard deviation to project cumulative totals over the target number of iterations. The result is the fraction of simulations that reached or exceeded the target output — a probability between 0 and 1.
