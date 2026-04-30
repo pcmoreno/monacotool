@@ -1,4 +1,4 @@
-import { csrfToken } from './csrf.js';
+import { csrfToken } from 'csrf';
 
 const forecastModal = document.getElementById('forecast-modal');
 const forecastBackdrop = document.getElementById('forecast-backdrop');

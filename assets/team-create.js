@@ -1,4 +1,4 @@
-import { csrfToken } from './csrf.js';
+import { csrfToken } from 'csrf';
 
 const teamCreateModal = document.getElementById('team-create-modal');
 const teamCreateBackdrop = document.getElementById('team-create-backdrop');

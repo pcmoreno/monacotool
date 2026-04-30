@@ -1,4 +1,4 @@
-import { csrfToken } from './csrf.js';
+import { csrfToken } from 'csrf';
 
 const inputClass = (extra = '') =>
     'w-full border border-primary-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-surface' + (extra ? ' ' + extra : '');
