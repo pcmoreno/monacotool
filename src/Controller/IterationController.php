@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Iteration;
 use App\Entity\Team;
+use App\Security\TeamVoter;
 use App\Services\IterationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,8 @@ final class IterationController extends AbstractController
     #[Route('/team/{id}/iteration', name: 'app_iteration_create', methods: ['POST'])]
     public function create(Request $request, Team $team): JsonResponse
     {
+        $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
+
         $data = json_decode($request->getContent(), true);
 
         if (!is_array($data)) {
@@ -51,6 +54,8 @@ final class IterationController extends AbstractController
     #[Route('/iteration/{id}', name: 'app_iteration_update', methods: ['PATCH'])]
     public function update(Request $request, Iteration $iteration): JsonResponse
     {
+        $this->denyAccessUnlessGranted(TeamVoter::EDIT, $iteration->getTeam());
+
         $data = json_decode($request->getContent(), true);
 
         if (!is_array($data)) {
@@ -91,6 +96,7 @@ final class IterationController extends AbstractController
     public function delete(Iteration $iteration): JsonResponse
     {
         $team = $iteration->getTeam();
+        $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
         $this->iterationService->delete($iteration);
 
         return new JsonResponse([

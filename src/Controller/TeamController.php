@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Request\ForecastRequest;
+use App\Security\TeamVoter;
 use App\Services\Forecaster\ForecastService;
 use App\Services\TeamService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class TeamController extends AbstractController
 {
@@ -54,6 +56,7 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team/{id}', name: 'app_team_show', methods: ['GET'])]
+    #[IsGranted(TeamVoter::VIEW, subject: 'team')]
     public function show(Team $team): Response
     {
         return $this->render('team/show.html.twig', [
@@ -64,6 +67,7 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team/{id}/forecast', name: 'app_team_forecast', methods: ['POST'])]
+    #[IsGranted(TeamVoter::EDIT, subject: 'team')]
     public function requestForecast(#[MapRequestPayload] ForecastRequest $forecastRequest, Team $team): JsonResponse
     {
         $forecast = $this->forecastService->forecast($team, $forecastRequest->targetIterations, $forecastRequest->targetOutput);
