@@ -30,6 +30,6 @@ class UserService
 
     public function emailExists(string $email): bool
     {
-        return $this->userRepository->findOneBy(['email' => $email]) !== null;
+        return $this->userRepository->findOneBy(['email' => mb_strtolower($email)]) !== null;
     }
 }

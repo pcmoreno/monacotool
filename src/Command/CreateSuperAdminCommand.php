@@ -45,6 +45,7 @@ class CreateSuperAdminCommand extends Command
         $io->title('Create Super Admin');
 
         $email = $io->ask('Email', validator: function (string $value): string {
+            $value = mb_strtolower(trim($value));
             $violations = $this->validator->validate($value, [new NotBlank(), new Email()]);
             if (count($violations) > 0) {
                 throw new \RuntimeException((string) $violations->get(0)->getMessage());
@@ -64,6 +65,9 @@ class CreateSuperAdminCommand extends Command
         $password = $io->askHidden('Password (hidden)', validator: function (string $value): string {
             if (strlen($value) < 8) {
                 throw new \RuntimeException('Password must be at least 8 characters.');
+            }
+            if (strlen($value) > 72) {
+                throw new \RuntimeException('Password must be 72 characters or fewer.');
             }
 
             return $value;

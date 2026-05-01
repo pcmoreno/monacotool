@@ -56,7 +56,10 @@ const submitRegister = async () => {
         if (response.ok) {
             window.location.href = data.redirect;
         } else {
-            showErrors(data.errors ?? ['Something went wrong. Please try again.']);
+            const errors = data.errors
+                ?? data.violations?.map(v => v.title)
+                ?? ['Something went wrong. Please try again.'];
+            showErrors(errors);
         }
     } catch {
         showErrors(['Something went wrong. Please try again.']);
