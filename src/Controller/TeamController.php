@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Exception\TooManyTeamsException;
 use App\Request\ForecastRequest;
 use App\Request\TeamCreateRequest;
 use App\Security\TeamVoter;
@@ -34,7 +35,11 @@ final class TeamController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $team = $this->teamService->create($teamCreateRequest->name, $user);
+        try {
+            $team = $this->teamService->create($teamCreateRequest->name, $user);
+        } catch (TooManyTeamsException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], 422);
+        }
 
         return new JsonResponse(['id' => $team->getId(), 'name' => $team->getName()], 201);
     }

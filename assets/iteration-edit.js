@@ -1,4 +1,4 @@
-import { csrfToken } from 'csrf';
+import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
 
 const inputClass = (extra = '') =>
@@ -66,9 +66,9 @@ const beginEdit = (cell) => {
         body[field] = field === 'output' ? parseInt(newValue, 10) : newValue;
 
         try {
-            const response = await fetch(`/iteration/${iterationId}`, {
+            const response = await apiFetch(`/iteration/${iterationId}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
 
@@ -144,9 +144,9 @@ const beginAddIteration = (trigger) => {
         }
 
         try {
-            const response = await fetch(`/team/${teamId}/iteration`, {
+            const response = await apiFetch(`/team/${teamId}/iteration`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ end_date: endDate, output: parsed }),
             });
 
@@ -180,7 +180,7 @@ const beginAddIteration = (trigger) => {
 const deleteIteration = (iterationId, row) => {
     globalThis.showDeleteConfirm(async () => {
         try {
-            const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
+            const response = await apiFetch(`/iteration/${iterationId}`, { method: 'DELETE' });
 
             if (response.ok) {
                 row.remove();
