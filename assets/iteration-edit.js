@@ -31,81 +31,148 @@ const makeEditableRow = (id, endDate, output, tbody) => {
             data-editable data-field="output" data-iteration-id="${id}" data-value="${output}">${output}</td>
     `;
     tbody.insertBefore(tr, document.getElementById('add-iteration-trigger'));
-    tr.querySelectorAll('[data-editable]').forEach(attachEditHandler);
     return tr;
 };
 
-const attachEditHandler = (cell) => {
-    cell.addEventListener('click', () => {
-        if (cell.querySelector('input')) return;
+const beginEdit = (cell) => {
+    if (cell.querySelector('input')) return;
 
-        const { field, iterationId, value } = cell.dataset;
-        const originalText = cell.textContent.trim();
+    const { field, iterationId, value } = cell.dataset;
+    const originalText = cell.textContent.trim();
 
-        const input = document.createElement('input');
-        input.type = field === 'output' ? 'number' : 'date';
-        input.value = value;
-        input.className = inputClass(field === 'output' ? 'text-right font-semibold' : '');
+    const input = document.createElement('input');
+    input.type = field === 'output' ? 'number' : 'date';
+    input.value = value;
+    input.className = inputClass(field === 'output' ? 'text-right font-semibold' : '');
 
-        cell.textContent = '';
-        cell.appendChild(input);
-        input.focus();
+    cell.textContent = '';
+    cell.appendChild(input);
+    input.focus();
 
-        let committed = false;
+    let committed = false;
 
-        const save = async () => {
-            const newValue = input.value.trim();
+    const save = async () => {
+        const newValue = input.value.trim();
 
-            if (field === 'output') {
-                const parsed = parseInt(newValue, 10);
-                if (newValue === '' || isNaN(parsed) || parsed < 0) { cell.textContent = originalText; return; }
+        if (field === 'output') {
+            const parsed = parseInt(newValue, 10);
+            if (newValue === '' || isNaN(parsed) || parsed < 0) { cell.textContent = originalText; return; }
+        } else {
+            if (!newValue) { cell.textContent = originalText; return; }
+        }
+
+        const body = {};
+        body[field] = field === 'output' ? parseInt(newValue, 10) : newValue;
+
+        try {
+            const response = await fetch(`/iteration/${iterationId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+                body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                cell.dataset.value = newValue;
+                cell.textContent = newValue;
+                updateStats(data);
+                if (field === 'end_date') sortTableByDate(cell.closest('tbody'));
             } else {
-                if (!newValue) { cell.textContent = originalText; return; }
-            }
-
-            const body = {};
-            body[field] = field === 'output' ? parseInt(newValue, 10) : newValue;
-
-            try {
-                const response = await fetch(`/iteration/${iterationId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
-                    body: JSON.stringify(body),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    cell.dataset.value = newValue;
-                    cell.textContent = newValue;
-                    updateStats(data);
-                    if (field === 'end_date') sortTableByDate(cell.closest('tbody'));
-                } else {
-                    cell.textContent = originalText;
-                }
-            } catch {
                 cell.textContent = originalText;
             }
-        };
+        } catch {
+            cell.textContent = originalText;
+        }
+    };
 
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
-            if (e.key === 'Escape') { committed = true; cell.textContent = originalText; }
-        });
-        input.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
+        if (e.key === 'Escape') { committed = true; cell.textContent = originalText; }
+    });
+    input.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
+};
+
+const beginAddIteration = (trigger) => {
+    if (trigger.querySelector('input')) return;
+
+    const tbody = trigger.closest('tbody');
+    const teamId = trigger.closest('[data-team-id]').dataset.teamId;
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+    dateInput.className = inputClass();
+
+    const outputInput = document.createElement('input');
+    outputInput.type = 'number';
+    outputInput.min = '0';
+    outputInput.className = inputClass('text-right font-semibold');
+
+    const dateTd = trigger.cells[0];
+    dateTd.colSpan = 1;
+    dateTd.className = 'py-2 px-1';
+    dateTd.textContent = '';
+    dateTd.appendChild(dateInput);
+
+    const outputTd = document.createElement('td');
+    outputTd.className = 'py-2 px-1';
+    outputTd.appendChild(outputInput);
+    trigger.appendChild(outputTd);
+
+    dateInput.focus();
+
+    let committed = false;
+
+    const resetTrigger = () => {
+        committed = true;
+        if (trigger.cells.length > 1) trigger.deleteCell(1);
+        dateTd.colSpan = 3;
+        dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-lg font-light select-none';
+        dateTd.textContent = '+';
+    };
+
+    const save = async () => {
+        const endDate = dateInput.value.trim();
+        const outputVal = outputInput.value.trim();
+        const parsed = parseInt(outputVal, 10);
+
+        if (!endDate || outputVal === '' || isNaN(parsed) || parsed < 0) {
+            resetTrigger();
+            return;
+        }
+
+        try {
+            const response = await fetch(`/team/${teamId}/iteration`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+                body: JSON.stringify({ end_date: endDate, output: parsed }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resetTrigger();
+                makeEditableRow(data.id, data.endDate, data.output, tbody);
+                sortTableByDate(tbody);
+                updateStats(data);
+            } else {
+                resetTrigger();
+            }
+        } catch {
+            resetTrigger();
+        }
+    };
+
+    outputInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
+        if (e.key === 'Escape') resetTrigger();
+    });
+    outputInput.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
+    dateInput.addEventListener('keydown', e => {
+        if (e.key === 'Tab') return;
+        if (e.key === 'Escape') resetTrigger();
     });
 };
 
-document.querySelectorAll('[data-editable]').forEach(attachEditHandler);
-
-const iterationsTbody = document.querySelector('[data-team-id] tbody');
-
-iterationsTbody.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-delete-iteration]');
-    if (!btn) return;
-
-    const iterationId = btn.dataset.deleteIteration;
-    const row = btn.closest('tr');
-
+const deleteIteration = (iterationId, row) => {
     globalThis.showDeleteConfirm(async () => {
         const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
 
@@ -115,87 +182,18 @@ iterationsTbody.addEventListener('click', (e) => {
             updateStats(data);
         }
     });
+};
+
+document.addEventListener('click', (e) => {
+    const editable = e.target.closest('[data-editable]');
+    if (editable) { beginEdit(editable); return; }
+
+    const deleteBtn = e.target.closest('[data-delete-iteration]');
+    if (deleteBtn) {
+        deleteIteration(deleteBtn.dataset.deleteIteration, deleteBtn.closest('tr'));
+        return;
+    }
+
+    const trigger = e.target.closest('#add-iteration-trigger');
+    if (trigger) beginAddIteration(trigger);
 });
-
-const trigger = document.getElementById('add-iteration-trigger');
-if (trigger) {
-    trigger.addEventListener('click', () => {
-        if (trigger.querySelector('input')) return;
-
-        const tbody = trigger.closest('tbody');
-        const teamId = trigger.closest('[data-team-id]').dataset.teamId;
-
-        const dateInput = document.createElement('input');
-        dateInput.type = 'date';
-        dateInput.className = inputClass();
-
-        const outputInput = document.createElement('input');
-        outputInput.type = 'number';
-        outputInput.min = '0';
-        outputInput.className = inputClass('text-right font-semibold');
-
-        const dateTd = trigger.cells[0];
-        dateTd.colSpan = 1;
-        dateTd.className = 'py-2 px-1';
-        dateTd.textContent = '';
-        dateTd.appendChild(dateInput);
-
-        const outputTd = document.createElement('td');
-        outputTd.className = 'py-2 px-1';
-        outputTd.appendChild(outputInput);
-        trigger.appendChild(outputTd);
-
-        dateInput.focus();
-
-        let committed = false;
-
-        const save = async () => {
-            const endDate = dateInput.value.trim();
-            const outputVal = outputInput.value.trim();
-            const parsed = parseInt(outputVal, 10);
-
-            if (!endDate || outputVal === '' || isNaN(parsed) || parsed < 0) {
-                resetTrigger(dateTd);
-                return;
-            }
-
-            try {
-                const response = await fetch(`/team/${teamId}/iteration`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
-                    body: JSON.stringify({ end_date: endDate, output: parsed }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    resetTrigger(dateTd);
-                    makeEditableRow(data.id, data.endDate, data.output, tbody);
-                    sortTableByDate(tbody);
-                    updateStats(data);
-                } else {
-                    resetTrigger(dateTd);
-                }
-            } catch {
-                resetTrigger(dateTd);
-            }
-        };
-
-        const resetTrigger = (dateTd) => {
-            committed = true;
-            if (trigger.cells.length > 1) trigger.deleteCell(1);
-            dateTd.colSpan = 3;
-            dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-lg font-light select-none';
-            dateTd.textContent = '+';
-        };
-
-        outputInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
-            if (e.key === 'Escape') resetTrigger(dateTd);
-        });
-        outputInput.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
-        dateInput.addEventListener('keydown', e => {
-            if (e.key === 'Tab') return;
-            if (e.key === 'Escape') resetTrigger(dateTd);
-        });
-    });
-}
