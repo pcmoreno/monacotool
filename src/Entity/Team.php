@@ -143,11 +143,7 @@ class Team
 
     public function removeMembership(Membership $membership): self
     {
-        if ($this->memberships->removeElement($membership)) {
-            if ($membership->getTeam() === $this) {
-                $membership->setTeam(null);
-            }
-        }
+        $this->memberships->removeElement($membership);
 
         return $this;
     }

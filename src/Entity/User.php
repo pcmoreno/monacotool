@@ -134,11 +134,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeMembership(Membership $membership): self
     {
-        if ($this->memberships->removeElement($membership)) {
-            if ($membership->getUser() === $this) {
-                $membership->setUser(null);
-            }
-        }
+        $this->memberships->removeElement($membership);
 
         return $this;
     }
