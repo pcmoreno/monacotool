@@ -34,9 +34,12 @@ class BasicForecaster implements ForecastInterface
 
     private function createSimulations(Team $team, int $numberOfIterations): array
     {
+        $mean = $team->getOutputAverage();
+        $stdDev = $team->getSampleStandardDeviation();
+
         $simulations = [];
         for ($i = 0; $i < $this->numberOfSimulations; $i++) {
-            $simulation = new Simulation($numberOfIterations, $team);
+            $simulation = new Simulation($numberOfIterations, $mean, $stdDev);
             $simulation->simulate();
             $simulations[] = array_sum($simulation->getIterations());
         }
