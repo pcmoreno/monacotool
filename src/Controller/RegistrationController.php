@@ -25,10 +25,6 @@ final class RegistrationController extends AbstractController
     #[Route('/register', name: 'app_register', methods: ['POST'])]
     public function register(#[MapRequestPayload] RegistrationRequest $registrationRequest): JsonResponse
     {
-        if ($registrationRequest->password !== $registrationRequest->confirmPassword) {
-            return new JsonResponse(['errors' => ['Passwords do not match.']], 422);
-        }
-
         if ($this->userService->emailExists($registrationRequest->email)) {
             return new JsonResponse(['errors' => ['An account with this email already exists.']], 422);
         }
