@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services\Forecaster;
 
-use App\Entity\Team;
-
 class Simulation
 {
     private array $iterations;
-    private Team $team;
-    private int $numberOfIterations;
 
-    public function __construct(int $numberOfIterations, Team $team)
-    {
+    public function __construct(
+        private readonly int $numberOfIterations,
+        private readonly float $mean,
+        private readonly float $stdDev,
+    ) {
         $this->iterations = [];
-        $this->team = $team;
-        $this->numberOfIterations = $numberOfIterations;
     }
 
     public function simulate(): void
     {
         for ($i = 0; $i < $this->numberOfIterations; $i++) {
-            $iteration = $this->getRandomNumberWithNormalDistribution(
-                $this->team->getOutputAverage(), $this->team->getSampleStandardDeviation()
-            );
-            $this->iterations[] = $iteration;
+            $this->iterations[] = $this->getRandomNumberWithNormalDistribution($this->mean, $this->stdDev);
         }
     }
 
