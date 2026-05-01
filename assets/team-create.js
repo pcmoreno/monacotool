@@ -1,23 +1,25 @@
 import { csrfToken } from 'csrf';
 
-const teamCreateModal = document.getElementById('team-create-modal');
-const teamCreateBackdrop = document.getElementById('team-create-backdrop');
-const teamCreateNameInput = document.getElementById('team-create-name');
-const teamCreateSubmitBtn = document.getElementById('team-create-submit');
+const openTeamCreate = () => {
+    document.getElementById('team-create-modal').classList.remove('hidden');
+    document.getElementById('team-create-name').focus();
+};
 
-const openTeamCreate = () => { teamCreateModal.classList.remove('hidden'); teamCreateNameInput.focus(); };
-const closeTeamCreate = () => { teamCreateModal.classList.add('hidden'); teamCreateNameInput.value = ''; };
+const closeTeamCreate = () => {
+    const modal = document.getElementById('team-create-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    const input = document.getElementById('team-create-name');
+    if (input) input.value = '';
+};
 
-document.getElementById('open-team-create-modal').addEventListener('click', openTeamCreate);
-document.getElementById('close-team-create-modal').addEventListener('click', closeTeamCreate);
-teamCreateBackdrop.addEventListener('click', closeTeamCreate);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTeamCreate(); });
-
-teamCreateSubmitBtn.addEventListener('click', async () => {
-    const name = teamCreateNameInput.value.trim();
+const submitTeamCreate = async () => {
+    const input = document.getElementById('team-create-name');
+    const btn = document.getElementById('team-create-submit');
+    const name = input.value.trim();
     if (!name) return;
 
-    teamCreateSubmitBtn.disabled = true;
+    btn.disabled = true;
 
     try {
         const response = await fetch('/team', {
@@ -32,12 +34,26 @@ teamCreateSubmitBtn.addEventListener('click', async () => {
             addTeamCard(team);
         }
     } finally {
-        teamCreateSubmitBtn.disabled = false;
+        btn.disabled = false;
     }
+};
+
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-team-create-modal')) { openTeamCreate(); return; }
+    if (e.target.closest('#close-team-create-modal')) { closeTeamCreate(); return; }
+    if (e.target.closest('#team-create-backdrop')) { closeTeamCreate(); return; }
+    if (e.target.closest('#team-create-submit')) { submitTeamCreate(); return; }
 });
 
-teamCreateNameInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); teamCreateSubmitBtn.click(); }
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('team-create-modal')?.classList.contains('hidden')) {
+        closeTeamCreate();
+        return;
+    }
+    if (e.key === 'Enter' && e.target.id === 'team-create-name') {
+        e.preventDefault();
+        submitTeamCreate();
+    }
 });
 
 const addTeamCard = (team) => {

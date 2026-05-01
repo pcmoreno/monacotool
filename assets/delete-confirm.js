@@ -1,4 +1,3 @@
-const confirmModal = document.getElementById('confirm-delete-modal');
 globalThis.icons = {
     trash: document.getElementById('icon-trash').innerHTML,
     magnifier: document.getElementById('icon-magnifier').innerHTML,
@@ -6,18 +5,25 @@ globalThis.icons = {
 
 let onConfirmCallback = null;
 
-document.getElementById('confirm-delete-cancel').addEventListener('click', () => {
-    confirmModal.classList.add('hidden');
+const closeConfirm = () => {
+    document.getElementById('confirm-delete-modal')?.classList.add('hidden');
     onConfirmCallback = null;
-});
+};
 
-document.getElementById('confirm-delete-confirm').addEventListener('click', async () => {
-    if (onConfirmCallback) await onConfirmCallback();
-    confirmModal.classList.add('hidden');
-    onConfirmCallback = null;
+document.addEventListener('click', async (e) => {
+    if (e.target.closest('#confirm-delete-cancel')) {
+        closeConfirm();
+        return;
+    }
+    if (e.target.closest('#confirm-delete-confirm')) {
+        const cb = onConfirmCallback;
+        onConfirmCallback = null;
+        if (cb) await cb();
+        document.getElementById('confirm-delete-modal')?.classList.add('hidden');
+    }
 });
 
 globalThis.showDeleteConfirm = (callback) => {
     onConfirmCallback = callback;
-    confirmModal.classList.remove('hidden');
+    document.getElementById('confirm-delete-modal')?.classList.remove('hidden');
 };

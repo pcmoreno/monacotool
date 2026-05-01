@@ -168,12 +168,12 @@
         <div class="space-y-4">
             <div>
                 <label for="forecast-target-output" class="block text-sm font-medium text-graphite-700 mb-1">Target Output</label>
-                <input id="forecast-target-output" type="number" min="1"
+                <input id="forecast-target-output" type="number" min="1" max="100000"
                        class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             </div>
             <div>
                 <label for="forecast-target-iterations" class="block text-sm font-medium text-graphite-700 mb-1">Target Iterations</label>
-                <input id="forecast-target-iterations" type="number" min="1"
+                <input id="forecast-target-iterations" type="number" min="1" max="100"
                        class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             </div>
             <button id="forecast-submit" type="button"

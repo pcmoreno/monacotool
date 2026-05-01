@@ -1,36 +1,29 @@
 import { csrfToken } from 'csrf';
 
-const forecastModal = document.getElementById('forecast-modal');
-const forecastBackdrop = document.getElementById('forecast-backdrop');
-const forecastOpenBtn = document.getElementById('open-forecast-modal');
-const forecastSubmitBtn = document.getElementById('forecast-submit');
-const forecastOutputInput = document.getElementById('forecast-target-output');
-const forecastIterationsInput = document.getElementById('forecast-target-iterations');
-
 const openForecast = () => {
-    forecastModal.classList.remove('hidden');
-    forecastOutputInput.focus();
+    document.getElementById('forecast-modal').classList.remove('hidden');
+    document.getElementById('forecast-target-output').focus();
 };
 
 const closeForecast = () => {
-    forecastModal.classList.add('hidden');
-    forecastOutputInput.value = '';
-    forecastIterationsInput.value = '';
+    const modal = document.getElementById('forecast-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    const output = document.getElementById('forecast-target-output');
+    const iterations = document.getElementById('forecast-target-iterations');
+    if (output) output.value = '';
+    if (iterations) iterations.value = '';
 };
 
-forecastOpenBtn.addEventListener('click', openForecast);
-forecastBackdrop.addEventListener('click', closeForecast);
-document.getElementById('close-forecast-modal').addEventListener('click', closeForecast);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeForecast(); });
-
-forecastSubmitBtn.addEventListener('click', async () => {
-    const teamId = forecastSubmitBtn.dataset.teamId;
-    const targetOutput = parseInt(forecastOutputInput.value, 10);
-    const targetIterations = parseInt(forecastIterationsInput.value, 10);
+const submitForecast = async () => {
+    const btn = document.getElementById('forecast-submit');
+    const teamId = btn.dataset.teamId;
+    const targetOutput = parseInt(document.getElementById('forecast-target-output').value, 10);
+    const targetIterations = parseInt(document.getElementById('forecast-target-iterations').value, 10);
 
     if (!targetOutput || targetOutput < 1 || !targetIterations || targetIterations < 1) return;
 
-    forecastSubmitBtn.disabled = true;
+    btn.disabled = true;
 
     try {
         const response = await fetch(`/team/${teamId}/forecast`, {
@@ -45,7 +38,45 @@ forecastSubmitBtn.addEventListener('click', async () => {
             addForecastRow(data);
         }
     } finally {
-        forecastSubmitBtn.disabled = false;
+        btn.disabled = false;
+    }
+};
+
+const deleteForecast = (forecastId, row) => {
+    globalThis.showDeleteConfirm(async () => {
+        const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
+
+        if (response.ok) {
+            row.remove();
+
+            const tbody = document.getElementById('forecasts-tbody');
+            if (!tbody.querySelector('tr')) {
+                tbody.closest('table').classList.add('hidden');
+                const p = document.createElement('p');
+                p.id = 'forecasts-empty';
+                p.className = 'text-sm text-graphite-400';
+                p.textContent = 'No forecasts yet.';
+                tbody.closest('table').before(p);
+            }
+        }
+    });
+};
+
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-forecast-modal')) { openForecast(); return; }
+    if (e.target.closest('#close-forecast-modal')) { closeForecast(); return; }
+    if (e.target.closest('#forecast-backdrop')) { closeForecast(); return; }
+    if (e.target.closest('#forecast-submit')) { submitForecast(); return; }
+
+    const deleteBtn = e.target.closest('[data-delete-forecast]');
+    if (deleteBtn) {
+        deleteForecast(deleteBtn.dataset.deleteForecast, deleteBtn.closest('tr'));
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('forecast-modal')?.classList.contains('hidden')) {
+        closeForecast();
     }
 });
 
@@ -77,29 +108,3 @@ const addForecastRow = (forecast) => {
 
     document.getElementById('forecasts-tbody').prepend(tr);
 };
-
-document.getElementById('forecasts-tbody').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-delete-forecast]');
-    if (!btn) return;
-
-    const forecastId = btn.dataset.deleteForecast;
-    const row = btn.closest('tr');
-
-    globalThis.showDeleteConfirm(async () => {
-        const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
-
-        if (response.ok) {
-            row.remove();
-
-            const tbody = document.getElementById('forecasts-tbody');
-            if (!tbody.querySelector('tr')) {
-                tbody.closest('table').classList.add('hidden');
-                const p = document.createElement('p');
-                p.id = 'forecasts-empty';
-                p.className = 'text-sm text-graphite-400';
-                p.textContent = 'No forecasts yet.';
-                tbody.closest('table').before(p);
-            }
-        }
-    });
-});
