@@ -1,4 +1,5 @@
 import { csrfToken } from 'csrf';
+import { showToast, errorMessageFromResponse } from 'toast';
 
 const openForecast = () => {
     document.getElementById('forecast-modal').classList.remove('hidden');
@@ -36,7 +37,11 @@ const submitForecast = async () => {
             const data = await response.json();
             closeForecast();
             addForecastRow(data);
+        } else {
+            showToast(await errorMessageFromResponse(response, 'Could not run forecast.'));
         }
+    } catch {
+        showToast('Network error. Please try again.');
     } finally {
         btn.disabled = false;
     }
@@ -44,20 +49,26 @@ const submitForecast = async () => {
 
 const deleteForecast = (forecastId, row) => {
     globalThis.showDeleteConfirm(async () => {
-        const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
+        try {
+            const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
 
-        if (response.ok) {
-            row.remove();
+            if (response.ok) {
+                row.remove();
 
-            const tbody = document.getElementById('forecasts-tbody');
-            if (!tbody.querySelector('tr')) {
-                tbody.closest('table').classList.add('hidden');
-                const p = document.createElement('p');
-                p.id = 'forecasts-empty';
-                p.className = 'text-sm text-graphite-400';
-                p.textContent = 'No forecasts yet.';
-                tbody.closest('table').before(p);
+                const tbody = document.getElementById('forecasts-tbody');
+                if (!tbody.querySelector('tr')) {
+                    tbody.closest('table').classList.add('hidden');
+                    const p = document.createElement('p');
+                    p.id = 'forecasts-empty';
+                    p.className = 'text-sm text-graphite-400';
+                    p.textContent = 'No forecasts yet.';
+                    tbody.closest('table').before(p);
+                }
+            } else {
+                showToast(await errorMessageFromResponse(response, 'Could not delete forecast.'));
             }
+        } catch {
+            showToast('Network error. Please try again.');
         }
     });
 };

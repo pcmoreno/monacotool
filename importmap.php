@@ -19,6 +19,9 @@ return [
     'csrf' => [
         'path' => './assets/csrf.js',
     ],
+    'toast' => [
+        'path' => './assets/toast.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
