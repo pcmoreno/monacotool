@@ -64,8 +64,8 @@ symfony server:start
 | Role | Access |
 |---|---|
 | `ROLE_SUPER_ADMIN` | All teams, all data |
-| `ROLE_ADMIN` | Team admin (membership management) |
-| `ROLE_USER` | Team member (read, add iterations, request forecasts) |
+| `TeamRole::Admin` | Team admin — can view, add/edit/delete iterations, and request forecasts |
+| `TeamRole::User` | Team member — view only |
 
 ## Theming
 

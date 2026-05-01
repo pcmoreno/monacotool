@@ -1,4 +1,4 @@
-import { csrfToken } from 'csrf';
+import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
 
 const openTeamCreate = () => {
@@ -23,9 +23,9 @@ const submitTeamCreate = async () => {
     btn.disabled = true;
 
     try {
-        const response = await fetch('/team', {
+        const response = await apiFetch('/team', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name }),
         });
 

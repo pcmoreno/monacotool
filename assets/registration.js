@@ -1,3 +1,5 @@
+import { apiFetch } from 'csrf';
+
 const closeRegister = () => {
     const modal = document.getElementById('register-modal');
     if (!modal) return;
@@ -38,7 +40,7 @@ const submitRegister = async () => {
     btn.disabled = true;
 
     try {
-        const response = await fetch('/register', {
+        const response = await apiFetch('/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

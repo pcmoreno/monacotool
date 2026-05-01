@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Enum\TeamRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -23,6 +24,19 @@ class TeamRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($team);
         $this->getEntityManager()->flush();
+    }
+
+    public function countAdminTeamsByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->join('t.memberships', 'm')
+            ->where('m.user = :user')
+            ->andWhere('m.role = :role')
+            ->setParameter('user', $user)
+            ->setParameter('role', TeamRole::Admin)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /** @return Team[] */

@@ -48,10 +48,13 @@
                     </div>
                 </div>
                 {% if app.user %}
-                    <a href="{{ path('app_logout') }}"
-                       class="rounded-md px-3 py-1.5 text-xs font-medium text-header-muted hover:text-header-fg hover:bg-header-hover transition">
-                        Logout
-                    </a>
+                    <form method="post" action="{{ path('app_logout') }}" class="contents">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit"
+                                class="rounded-md px-3 py-1.5 text-xs font-medium text-header-muted hover:text-header-fg hover:bg-header-hover transition">
+                            Logout
+                        </button>
+                    </form>
                 {% endif %}
             </div>
         </header>

@@ -8,6 +8,7 @@ use App\Entity\Membership;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Enum\TeamRole;
+use App\Exception\TooManyTeamsException;
 use App\Repository\TeamRepository;
 
 class TeamService
@@ -22,6 +23,10 @@ class TeamService
         $team->setName($name);
 
         if (!$creator->isSuperAdmin()) {
+            if ($this->teamRepository->countAdminTeamsByUser($creator) >= 5) {
+                throw new TooManyTeamsException();
+            }
+
             $membership = new Membership();
             $membership->setUser($creator);
             $membership->setRole(TeamRole::Admin);

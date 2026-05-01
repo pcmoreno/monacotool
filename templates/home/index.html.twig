@@ -12,7 +12,10 @@
             <p class="text-sm text-graphite-500 mb-6">Logged in as <span class="font-medium text-graphite-700">{{ app.user.name ?? app.user.email }}</span></p>
             <div class="flex justify-center gap-4">
                 <a href="{{ path('app_team') }}" class="rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">Go to teams</a>
-                <a href="{{ path('app_logout') }}" class="rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">Logout</a>
+                <form method="post" action="{{ path('app_logout') }}" class="contents">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                    <button type="submit" class="rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">Logout</button>
+                </form>
             </div>
         {% else %}
             <div class="flex justify-center gap-4">

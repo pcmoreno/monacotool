@@ -1,4 +1,4 @@
-import { csrfToken } from 'csrf';
+import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
 
 const openForecast = () => {
@@ -27,9 +27,9 @@ const submitForecast = async () => {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/team/${teamId}/forecast`, {
+        const response = await apiFetch(`/team/${teamId}/forecast`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ targetOutput, targetIterations }),
         });
 
@@ -50,7 +50,7 @@ const submitForecast = async () => {
 const deleteForecast = (forecastId, row) => {
     globalThis.showDeleteConfirm(async () => {
         try {
-            const response = await fetch(`/forecast/${forecastId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
+            const response = await apiFetch(`/forecast/${forecastId}`, { method: 'DELETE' });
 
             if (response.ok) {
                 row.remove();
