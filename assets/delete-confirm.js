@@ -1,4 +1,4 @@
-globalThis.icons = {
+export const icons = {
     trash: document.getElementById('icon-trash').innerHTML,
     magnifier: document.getElementById('icon-magnifier').innerHTML,
 };
@@ -22,7 +22,7 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-globalThis.showDeleteConfirm = (callback) => {
+export const showDeleteConfirm = (callback) => {
     callbackQueue.push(callback);
     document.getElementById('confirm-delete-modal')?.classList.remove('hidden');
 };

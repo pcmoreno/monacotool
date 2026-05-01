@@ -1,5 +1,6 @@
 import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
+import { icons, showDeleteConfirm } from 'delete-confirm';
 
 const openForecast = () => {
     document.getElementById('forecast-modal').classList.remove('hidden');
@@ -48,7 +49,7 @@ const submitForecast = async () => {
 };
 
 const deleteForecast = (forecastId, row) => {
-    globalThis.showDeleteConfirm(async () => {
+    showDeleteConfirm(async () => {
         try {
             const response = await apiFetch(`/forecast/${forecastId}`, { method: 'DELETE' });
 
@@ -107,8 +108,8 @@ const addForecastRow = (forecast) => {
     tr.innerHTML = `
         <td class="py-2.5">
             <div class="flex items-center gap-2">
-                <button type="button" class="text-graphite-400 hover:text-graphite-600 transition">${globalThis.icons.magnifier}</button>
-                <button type="button" data-delete-forecast="${forecast.id}" class="text-graphite-400 hover:text-red-500 transition">${globalThis.icons.trash}</button>
+                <button type="button" class="text-graphite-400 hover:text-graphite-600 transition">${icons.magnifier}</button>
+                <button type="button" data-delete-forecast="${forecast.id}" class="text-graphite-400 hover:text-red-500 transition">${icons.trash}</button>
             </div>
         </td>
         <td class="py-2.5 text-graphite-600">${forecast.createdAt}</td>
