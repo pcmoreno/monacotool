@@ -1,4 +1,5 @@
 import { csrfToken } from 'csrf';
+import { showToast, errorMessageFromResponse } from 'toast';
 
 const openTeamCreate = () => {
     document.getElementById('team-create-modal').classList.remove('hidden');
@@ -32,7 +33,11 @@ const submitTeamCreate = async () => {
             const team = await response.json();
             closeTeamCreate();
             addTeamCard(team);
+        } else {
+            showToast(await errorMessageFromResponse(response, 'Could not create team.'));
         }
+    } catch {
+        showToast('Network error. Please try again.');
     } finally {
         btn.disabled = false;
     }

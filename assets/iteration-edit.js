@@ -1,4 +1,5 @@
 import { csrfToken } from 'csrf';
+import { showToast, errorMessageFromResponse } from 'toast';
 
 const inputClass = (extra = '') =>
     'w-full border border-primary-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-surface' + (extra ? ' ' + extra : '');
@@ -79,9 +80,11 @@ const beginEdit = (cell) => {
                 if (field === 'end_date') sortTableByDate(cell.closest('tbody'));
             } else {
                 cell.textContent = originalText;
+                showToast(await errorMessageFromResponse(response, 'Could not update iteration.'));
             }
         } catch {
             cell.textContent = originalText;
+            showToast('Network error. Please try again.');
         }
     };
 
@@ -155,9 +158,11 @@ const beginAddIteration = (trigger) => {
                 updateStats(data);
             } else {
                 resetTrigger();
+                showToast(await errorMessageFromResponse(response, 'Could not add iteration.'));
             }
         } catch {
             resetTrigger();
+            showToast('Network error. Please try again.');
         }
     };
 
@@ -174,12 +179,18 @@ const beginAddIteration = (trigger) => {
 
 const deleteIteration = (iterationId, row) => {
     globalThis.showDeleteConfirm(async () => {
-        const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
+        try {
+            const response = await fetch(`/iteration/${iterationId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken() } });
 
-        if (response.ok) {
-            row.remove();
-            const data = await response.json();
-            updateStats(data);
+            if (response.ok) {
+                row.remove();
+                const data = await response.json();
+                updateStats(data);
+            } else {
+                showToast(await errorMessageFromResponse(response, 'Could not delete iteration.'));
+            }
+        } catch {
+            showToast('Network error. Please try again.');
         }
     });
 };
