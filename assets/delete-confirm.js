@@ -1,13 +1,13 @@
-globalThis.icons = {
+export const icons = {
     trash: document.getElementById('icon-trash').innerHTML,
     magnifier: document.getElementById('icon-magnifier').innerHTML,
 };
 
-let onConfirmCallback = null;
+const callbackQueue = [];
 
 const closeConfirm = () => {
     document.getElementById('confirm-delete-modal')?.classList.add('hidden');
-    onConfirmCallback = null;
+    callbackQueue.length = 0;
 };
 
 document.addEventListener('click', async (e) => {
@@ -16,14 +16,13 @@ document.addEventListener('click', async (e) => {
         return;
     }
     if (e.target.closest('#confirm-delete-confirm')) {
-        const cb = onConfirmCallback;
-        onConfirmCallback = null;
+        const cb = callbackQueue.shift();
         if (cb) await cb();
         document.getElementById('confirm-delete-modal')?.classList.add('hidden');
     }
 });
 
-globalThis.showDeleteConfirm = (callback) => {
-    onConfirmCallback = callback;
+export const showDeleteConfirm = (callback) => {
+    callbackQueue.push(callback);
     document.getElementById('confirm-delete-modal')?.classList.remove('hidden');
 };
