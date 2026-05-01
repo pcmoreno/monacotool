@@ -32,6 +32,7 @@ class BasicForecaster implements ForecastInterface
         return $forecast;
     }
 
+    /** @return list<int> */
     private function createSimulations(Team $team, int $numberOfIterations): array
     {
         $mean = $team->getOutputAverage();
@@ -47,7 +48,8 @@ class BasicForecaster implements ForecastInterface
         return $simulations;
     }
 
-    private function calculateProbabilityForRequestedTarget(array $simulations, int $target) : float
+    /** @param list<int> $simulations */
+    private function calculateProbabilityForRequestedTarget(array $simulations, int $target): float
     {
         $countSuccessful = 0;
         foreach ($simulations as $key => $value) {

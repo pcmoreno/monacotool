@@ -10,6 +10,7 @@ use App\Enum\TeamRole;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, Team> */
 final class TeamVoter extends Voter
 {
     public const VIEW = 'team.view';
@@ -32,7 +33,6 @@ final class TeamVoter extends Voter
             return true;
         }
 
-        /** @var Team $subject */
         foreach ($subject->getMemberships() as $membership) {
             if ($membership->getUser() !== $user) {
                 continue;

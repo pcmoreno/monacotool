@@ -19,11 +19,11 @@ class Membership
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'memberships')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\ManyToOne(targetEntity: Team::class, inversedBy: 'memberships')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Team $team = null;
+    private Team $team;
 
     #[ORM\Column(type: 'string', enumType: TeamRole::class)]
     private TeamRole $role;
@@ -33,24 +33,24 @@ class Membership
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser(User $user): self
     {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getTeam(): ?Team
+    public function getTeam(): Team
     {
         return $this->team;
     }
 
-    public function setTeam(?Team $team): self
+    public function setTeam(Team $team): self
     {
         $this->team = $team;
 

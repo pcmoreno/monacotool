@@ -16,13 +16,13 @@ class Forecast
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $targetOutput = null;
+    private int $targetOutput;
 
     #[ORM\Column]
-    private ?int $numberOfSimulations = null;
+    private int $numberOfSimulations;
 
     #[ORM\Column]
-    private ?int $targetIterations = null;
+    private int $targetIterations;
 
     #[ORM\Column(nullable: true)]
     private ?float $result = null;
@@ -43,7 +43,7 @@ class Forecast
         return $this->id;
     }
 
-    public function getTargetOutput(): ?int
+    public function getTargetOutput(): int
     {
         return $this->targetOutput;
     }
@@ -55,7 +55,7 @@ class Forecast
         return $this;
     }
 
-    public function getNumberOfSimulations(): ?int
+    public function getNumberOfSimulations(): int
     {
         return $this->numberOfSimulations;
     }
@@ -67,7 +67,7 @@ class Forecast
         return $this;
     }
 
-    public function getTargetIterations(): ?int
+    public function getTargetIterations(): int
     {
         return $this->targetIterations;
     }

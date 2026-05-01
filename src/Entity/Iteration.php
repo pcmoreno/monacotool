@@ -17,10 +17,10 @@ class Iteration
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $endDate = null;
+    private \DateTimeImmutable $endDate;
 
     #[ORM\Column]
-    private ?int $output = null;
+    private int $output;
 
     #[ORM\ManyToOne(inversedBy: 'iterations')]
     private ?Team $team = null;
@@ -30,7 +30,7 @@ class Iteration
         return $this->id;
     }
 
-    public function getEndDate(): ?\DateTimeImmutable
+    public function getEndDate(): \DateTimeImmutable
     {
         return $this->endDate;
     }
@@ -42,7 +42,7 @@ class Iteration
         return $this;
     }
 
-    public function getOutput(): ?int
+    public function getOutput(): int
     {
         return $this->output;
     }

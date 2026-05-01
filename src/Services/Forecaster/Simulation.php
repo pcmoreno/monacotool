@@ -6,6 +6,7 @@ namespace App\Services\Forecaster;
 
 class Simulation
 {
+    /** @var list<int> */
     private array $iterations;
 
     public function __construct(
@@ -23,13 +24,14 @@ class Simulation
         }
     }
 
-    private function getRandomNumberWithNormalDistribution($mean, $sd): int
+    private function getRandomNumberWithNormalDistribution(float $mean, float $sd): int
     {
         $x = 1 - mt_rand() / mt_getrandmax(); // (0, 1] to avoid log(0)
         $y = mt_rand() / mt_getrandmax();
         return max(0, (int) round(sqrt(-2 * log($x)) * cos(2 * pi() * $y) * $sd + $mean, 0, PHP_ROUND_HALF_UP));
     }
 
+    /** @return list<int> */
     public function getIterations(): array
     {
         return $this->iterations;
