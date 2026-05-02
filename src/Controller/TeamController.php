@@ -12,11 +12,13 @@ use App\Request\TeamCreateRequest;
 use App\Security\TeamVoter;
 use App\Services\Forecaster\ForecastService;
 use App\Services\TeamService;
+use App\Services\TeamStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -26,15 +28,13 @@ final class TeamController extends AbstractController
     public function __construct(
         private readonly ForecastService $forecastService,
         private readonly TeamService $teamService,
+        private readonly TeamStatisticsService $teamStatisticsService,
     ) {
     }
 
     #[Route('/team', name: 'app_team_create', methods: ['POST'])]
-    public function create(#[MapRequestPayload] TeamCreateRequest $teamCreateRequest): JsonResponse
+    public function create(#[MapRequestPayload] TeamCreateRequest $teamCreateRequest, #[CurrentUser] User $user): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         try {
             $team = $this->teamService->create($teamCreateRequest->name, $user);
         } catch (TooManyTeamsException $e) {
@@ -45,11 +45,8 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team', name: 'app_team', methods: ['GET'])]
-    public function index(): Response
+    public function index(#[CurrentUser] User $user): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         return $this->render('team/index.html.twig', [
             'teams' => $this->teamService->findTeamsForUser($user),
         ]);
@@ -61,8 +58,8 @@ final class TeamController extends AbstractController
     {
         return $this->render('team/show.html.twig', [
             'team' => $team,
-            'outputAverage' => $team->getOutputAverage(),
-            'standardDeviation' => $team->getSampleStandardDeviation(),
+            'outputAverage' => $this->teamStatisticsService->getOutputAverage($team),
+            'standardDeviation' => $this->teamStatisticsService->getSampleStandardDeviation($team),
         ]);
     }
 

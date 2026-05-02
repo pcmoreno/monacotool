@@ -43,9 +43,21 @@ class TeamRepository extends ServiceEntityRepository
     public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('t')
+            ->addSelect('i')
+            ->leftJoin('t.iterations', 'i')
             ->join('t.memberships', 'm')
             ->where('m.user = :user')
             ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return Team[] */
+    public function findAllWithIterations(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->addSelect('i')
+            ->leftJoin('t.iterations', 'i')
             ->getQuery()
             ->getResult();
     }

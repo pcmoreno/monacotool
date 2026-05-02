@@ -23,15 +23,37 @@ const sortTableByDate = (tbody) => {
 const makeEditableRow = (id, endDate, output, tbody) => {
     const tr = document.createElement('tr');
     tr.dataset.iterationId = id;
-    tr.innerHTML = `
-        <td class="py-2.5 px-1">
-            <button type="button" data-delete-iteration="${id}" class="text-graphite-400 hover:text-red-500 transition">${icons.trash}</button>
-        </td>
-        <td class="py-2.5 text-graphite-600 cursor-pointer hover:bg-primary-50 rounded px-1 transition"
-            data-editable data-field="end_date" data-iteration-id="${id}" data-value="${endDate}">${endDate}</td>
-        <td class="py-2.5 text-graphite-900 font-semibold text-right cursor-pointer hover:bg-primary-50 rounded px-1 transition"
-            data-editable data-field="output" data-iteration-id="${id}" data-value="${output}">${output}</td>
-    `;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.dataset.deleteIteration = id;
+    deleteBtn.className = 'text-graphite-400 hover:text-red-500 transition';
+    deleteBtn.innerHTML = icons.trash;
+
+    const deleteTd = document.createElement('td');
+    deleteTd.className = 'py-2.5 px-1';
+    deleteTd.appendChild(deleteBtn);
+
+    const endDateTd = document.createElement('td');
+    endDateTd.className = 'py-2.5 text-graphite-600 cursor-pointer hover:bg-primary-50 rounded px-1 transition';
+    endDateTd.dataset.editable = '';
+    endDateTd.dataset.field = 'end_date';
+    endDateTd.dataset.iterationId = id;
+    endDateTd.dataset.value = endDate;
+    endDateTd.textContent = endDate;
+
+    const outputTd = document.createElement('td');
+    outputTd.className = 'py-2.5 text-graphite-900 font-semibold text-right cursor-pointer hover:bg-primary-50 rounded px-1 transition';
+    outputTd.dataset.editable = '';
+    outputTd.dataset.field = 'output';
+    outputTd.dataset.iterationId = id;
+    outputTd.dataset.value = output;
+    outputTd.textContent = output;
+
+    tr.appendChild(deleteTd);
+    tr.appendChild(endDateTd);
+    tr.appendChild(outputTd);
+
     tbody.insertBefore(tr, document.getElementById('add-iteration-trigger'));
     return tr;
 };
@@ -171,10 +193,13 @@ const beginAddIteration = (trigger) => {
         if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
         if (e.key === 'Escape') resetTrigger();
     });
-    outputInput.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
     dateInput.addEventListener('keydown', e => {
         if (e.key === 'Tab') return;
         if (e.key === 'Escape') resetTrigger();
+    });
+    trigger.addEventListener('focusout', (e) => {
+        if (trigger.contains(e.relatedTarget)) return;
+        if (!committed) { committed = true; save(); }
     });
 };
 

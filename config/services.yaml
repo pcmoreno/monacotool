@@ -22,7 +22,7 @@ services:
 
     App\Services\Forecaster\BasicForecaster:
         arguments:
-            - '%number_of_simulations%'
+            $numberOfSimulations: '%number_of_simulations%'
 
     App\Services\Forecaster\ForecastInterface: '@App\Services\Forecaster\BasicForecaster'
     # add more service definitions when explicit configuration is needed

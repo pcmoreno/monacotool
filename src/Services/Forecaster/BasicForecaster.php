@@ -6,14 +6,17 @@ namespace App\Services\Forecaster;
 
 use App\Entity\Forecast;
 use App\Entity\Team;
+use App\Services\TeamStatisticsService;
 
 class BasicForecaster implements ForecastInterface
 {
-    private int $numberOfSimulations;
-
-    public function __construct(int $numberOfSimulations)
-    {
-        $this->numberOfSimulations = $numberOfSimulations;
+    public function __construct(
+        private readonly TeamStatisticsService $teamStatisticsService,
+        private int $numberOfSimulations,
+    ) {
+        if ($numberOfSimulations < 1) {
+            throw new \InvalidArgumentException('numberOfSimulations must be at least 1.');
+        }
     }
 
     public function forecast(Team $team, int $numberOfIterations, int $outputAmount): Forecast
@@ -35,8 +38,8 @@ class BasicForecaster implements ForecastInterface
     /** @return list<int> */
     private function createSimulations(Team $team, int $numberOfIterations): array
     {
-        $mean = $team->getOutputAverage();
-        $stdDev = $team->getSampleStandardDeviation();
+        $mean = $this->teamStatisticsService->getOutputAverage($team);
+        $stdDev = $this->teamStatisticsService->getSampleStandardDeviation($team);
 
         $simulations = [];
         for ($i = 0; $i < $this->numberOfSimulations; $i++) {
@@ -52,8 +55,8 @@ class BasicForecaster implements ForecastInterface
     private function calculateProbabilityForRequestedTarget(array $simulations, int $target): float
     {
         $countSuccessful = 0;
-        foreach ($simulations as $key => $value) {
-            if ($value >= $target) {
+        foreach ($simulations as $simulation) {
+            if ($simulation >= $target) {
                 $countSuccessful++;
             }
         }

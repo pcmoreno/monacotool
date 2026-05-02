@@ -48,7 +48,7 @@ class Forecast
         return $this->targetOutput;
     }
 
-    public function setTargetOutput(int $targetOutput): static
+    public function setTargetOutput(int $targetOutput): self
     {
         $this->targetOutput = $targetOutput;
 
@@ -60,7 +60,7 @@ class Forecast
         return $this->numberOfSimulations;
     }
 
-    public function setNumberOfSimulations(int $numberOfSimulations): static
+    public function setNumberOfSimulations(int $numberOfSimulations): self
     {
         $this->numberOfSimulations = $numberOfSimulations;
 
@@ -72,7 +72,7 @@ class Forecast
         return $this->targetIterations;
     }
 
-    public function setTargetIterations(int $targetIterations): static
+    public function setTargetIterations(int $targetIterations): self
     {
         $this->targetIterations = $targetIterations;
 
@@ -84,7 +84,7 @@ class Forecast
         return $this->result;
     }
 
-    public function setResult(?float $result): static
+    public function setResult(?float $result): self
     {
         $this->result = $result;
 
@@ -101,7 +101,7 @@ class Forecast
         return $this->team;
     }
 
-    public function setTeam(?Team $team): static
+    public function setTeam(?Team $team): self
     {
         $this->team = $team;
 

@@ -1,6 +1,6 @@
 export const icons = {
-    trash: document.getElementById('icon-trash').innerHTML,
-    magnifier: document.getElementById('icon-magnifier').innerHTML,
+    get trash() { return document.getElementById('icon-trash')?.innerHTML ?? ''; },
+    get magnifier() { return document.getElementById('icon-magnifier')?.innerHTML ?? ''; },
 };
 
 const callbackQueue = [];

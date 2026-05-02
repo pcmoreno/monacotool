@@ -42,7 +42,7 @@ class TeamService
     public function findTeamsForUser(User $user): array
     {
         if ($user->isSuperAdmin()) {
-            return $this->teamRepository->findAll();
+            return $this->teamRepository->findAllWithIterations();
         }
 
         return $this->teamRepository->findByUser($user);

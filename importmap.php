@@ -16,6 +16,9 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'theme' => [
+        'path' => './assets/theme.js',
+    ],
     'csrf' => [
         'path' => './assets/csrf.js',
     ],
