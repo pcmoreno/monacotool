@@ -23,7 +23,7 @@ const submitForecast = async () => {
     const targetOutput = parseInt(document.getElementById('forecast-target-output').value, 10);
     const targetIterations = parseInt(document.getElementById('forecast-target-iterations').value, 10);
 
-    if (!targetOutput || targetOutput < 1 || !targetIterations || targetIterations < 1) return;
+    if (!targetOutput || targetOutput < 1 || targetOutput > 100000 || !targetIterations || targetIterations < 1 || targetIterations > 100) return;
 
     btn.disabled = true;
 
@@ -105,18 +105,48 @@ const addForecastRow = (forecast) => {
 
     const tr = document.createElement('tr');
     tr.dataset.forecastId = forecast.id;
-    tr.innerHTML = `
-        <td class="py-2.5">
-            <div class="flex items-center gap-2">
-                <button type="button" class="text-graphite-400 hover:text-graphite-600 transition">${icons.magnifier}</button>
-                <button type="button" data-delete-forecast="${forecast.id}" class="text-graphite-400 hover:text-red-500 transition">${icons.trash}</button>
-            </div>
-        </td>
-        <td class="py-2.5 text-graphite-600">${forecast.createdAt}</td>
-        <td class="py-2.5 text-graphite-900 font-semibold text-right">${forecast.targetOutput}</td>
-        <td class="py-2.5 text-graphite-900 font-semibold text-right">${forecast.targetIterations}</td>
-        <td class="py-2.5 text-graphite-900 font-semibold text-right">${probability}</td>
-    `;
+
+    const magnifierBtn = document.createElement('button');
+    magnifierBtn.type = 'button';
+    magnifierBtn.className = 'text-graphite-400 hover:text-graphite-600 transition';
+    magnifierBtn.innerHTML = icons.magnifier;
+
+    const trashBtn = document.createElement('button');
+    trashBtn.type = 'button';
+    trashBtn.dataset.deleteForecast = forecast.id;
+    trashBtn.className = 'text-graphite-400 hover:text-red-500 transition';
+    trashBtn.innerHTML = icons.trash;
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'flex items-center gap-2';
+    actionsDiv.appendChild(magnifierBtn);
+    actionsDiv.appendChild(trashBtn);
+
+    const actionsTd = document.createElement('td');
+    actionsTd.className = 'py-2.5';
+    actionsTd.appendChild(actionsDiv);
+
+    const createdAtTd = document.createElement('td');
+    createdAtTd.className = 'py-2.5 text-graphite-600';
+    createdAtTd.textContent = forecast.createdAt;
+
+    const targetOutputTd = document.createElement('td');
+    targetOutputTd.className = 'py-2.5 text-graphite-900 font-semibold text-right';
+    targetOutputTd.textContent = forecast.targetOutput;
+
+    const targetIterationsTd = document.createElement('td');
+    targetIterationsTd.className = 'py-2.5 text-graphite-900 font-semibold text-right';
+    targetIterationsTd.textContent = forecast.targetIterations;
+
+    const probabilityTd = document.createElement('td');
+    probabilityTd.className = 'py-2.5 text-graphite-900 font-semibold text-right';
+    probabilityTd.textContent = probability;
+
+    tr.appendChild(actionsTd);
+    tr.appendChild(createdAtTd);
+    tr.appendChild(targetOutputTd);
+    tr.appendChild(targetIterationsTd);
+    tr.appendChild(probabilityTd);
 
     document.getElementById('forecasts-tbody').prepend(tr);
 };

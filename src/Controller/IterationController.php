@@ -29,6 +29,10 @@ final class IterationController extends AbstractController
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
         $endDate = \DateTimeImmutable::createFromFormat('Y-m-d', $iterationCreateRequest->endDate);
+        if (!$endDate) {
+            return new JsonResponse(['error' => 'Invalid date.'], 422);
+        }
+
         $iteration = $this->iterationService->create($team, $iterationCreateRequest->output, $endDate);
 
         return new JsonResponse([
@@ -49,9 +53,13 @@ final class IterationController extends AbstractController
             return new JsonResponse(['error' => 'Nothing to update.'], 422);
         }
 
-        $endDate = $iterationUpdateRequest->endDate
-            ? \DateTimeImmutable::createFromFormat('Y-m-d', $iterationUpdateRequest->endDate)
-            : null;
+        $endDate = null;
+        if ($iterationUpdateRequest->endDate) {
+            $endDate = \DateTimeImmutable::createFromFormat('Y-m-d', $iterationUpdateRequest->endDate);
+            if (!$endDate) {
+                return new JsonResponse(['error' => 'Invalid date.'], 422);
+            }
+        }
 
         $this->iterationService->update($iteration, $iterationUpdateRequest->output, $endDate);
 
