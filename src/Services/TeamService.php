@@ -38,6 +38,11 @@ class TeamService
         return $team;
     }
 
+    public function delete(Team $team): void
+    {
+        $this->teamRepository->delete($team);
+    }
+
     /** @return Team[] */
     public function findTeamsForUser(User $user): array
     {

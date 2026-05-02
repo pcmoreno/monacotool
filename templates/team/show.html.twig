@@ -13,7 +13,21 @@
             <div class="flex flex-col gap-6">
                 <div class="rounded-xl bg-surface shadow ring-1 ring-graphite-200 p-6">
                     <h2 class="text-xs font-semibold text-graphite-400 uppercase tracking-widest mb-4">Team</h2>
-                    <p class="text-lg font-semibold text-graphite-900 mb-4">{{ team.name }}</p>
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-lg font-semibold text-graphite-900">{{ team.name }}</p>
+                        {% if is_granted('team.delete', team) %}
+                            <button id="open-delete-team-modal"
+                                    type="button"
+                                    data-team-id="{{ team.id }}"
+                                    data-team-name="{{ team.name }}"
+                                    class="text-graphite-400 hover:text-red-600 transition"
+                                    title="Delete team">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        {% endif %}
+                    </div>
                     {% if team.memberships is empty %}
                         <p class="text-sm text-graphite-400">No members yet.</p>
                     {% else %}
@@ -185,9 +199,32 @@
     </div>
 </div>
 
+<div id="delete-team-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div id="delete-team-backdrop" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
+        <h2 class="text-xl font-bold text-graphite-900 mb-2">Delete Team</h2>
+        <p class="text-sm text-graphite-500 mb-1">This will permanently delete the team and all its iterations and forecasts.</p>
+        <p class="text-sm text-graphite-500 mb-4">Type <strong id="delete-team-name-hint" class="text-graphite-900"></strong> to confirm.</p>
+        <input id="delete-team-confirm-input" type="text" autocomplete="off"
+               class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm mb-6 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500">
+        <div id="delete-team-error" class="hidden text-sm text-red-600 mb-4"></div>
+        <div class="flex gap-3">
+            <button id="delete-team-cancel" type="button"
+                    class="flex-1 rounded-md px-4 py-2 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">
+                Cancel
+            </button>
+            <button id="delete-team-confirm" type="button" disabled
+                    class="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <template id="icon-trash">{% include 'icons/trash.html.twig' %}</template>
 <template id="icon-magnifier">{% include 'icons/magnifier.html.twig' %}</template>
 
 <script type="module" src="{{ asset('iteration-edit.js') }}"></script>
 <script type="module" src="{{ asset('forecast-modal.js') }}"></script>
+<script type="module" src="{{ asset('team-delete.js') }}"></script>
 {% endblock %}

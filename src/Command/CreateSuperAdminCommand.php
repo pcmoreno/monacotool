@@ -86,6 +86,7 @@ class CreateSuperAdminCommand extends Command
         $user->setName($name);
         $user->setRoles(['ROLE_SUPER_ADMIN']);
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
+        $user->setIsVerified(true);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -26,6 +26,12 @@ class TeamRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+    public function delete(Team $team): void
+    {
+        $this->getEntityManager()->remove($team);
+        $this->getEntityManager()->flush();
+    }
+
     public function countAdminTeamsByUser(User $user): int
     {
         return (int) $this->createQueryBuilder('t')
