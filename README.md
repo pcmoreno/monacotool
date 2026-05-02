@@ -35,7 +35,7 @@ Copy and configure your environment:
 
 ```bash
 cp .env .env.local
-# edit DATABASE_URL and APP_SECRET in .env.local
+# edit DATABASE_URL, APP_SECRET, MAILER_DSN, and MAILER_FROM in .env.local
 ```
 
 Run migrations:
@@ -43,6 +43,10 @@ Run migrations:
 ```bash
 php bin/console doctrine:migrations:migrate
 ```
+
+### Mailer
+
+The app sends transactional emails for account verification and password reset. Set `MAILER_DSN` and `MAILER_FROM` in `.env.local`. During development, [Mailpit](https://mailpit.axllent.org/) works well as a local SMTP catcher.
 
 ### Create the super admin
 
@@ -63,8 +67,8 @@ symfony server:start
 
 | Role | Access |
 |---|---|
-| `ROLE_SUPER_ADMIN` | All teams, all data |
-| `TeamRole::Admin` | Team admin — can view, add/edit/delete iterations, and request forecasts |
+| `ROLE_SUPER_ADMIN` | All teams, all data, can delete any team |
+| `TeamRole::Admin` | Team admin — can view, add/edit/delete iterations, request forecasts, and delete the team |
 | `TeamRole::User` | Team member — view only |
 
 ## Theming
@@ -75,6 +79,12 @@ The UI ships with three themes — **Light**, **Dark**, and **Forest** — switc
 
 | Method | Path | Description |
 |---|---|---|
+| `POST` | `/register` | Create a new account |
+| `POST` | `/resend-verification` | Resend the email verification link |
+| `POST` | `/forgot-password` | Request a password reset email |
+| `POST` | `/reset-password` | Reset password using a token |
+| `POST` | `/team` | Create a team |
+| `DELETE` | `/team/{id}` | Delete a team (admin/superadmin only) |
 | `POST` | `/team/{id}/forecast` | Request a new forecast |
 | `DELETE` | `/forecast/{id}` | Delete a forecast |
 | `POST` | `/team/{id}/iteration` | Add an iteration |
