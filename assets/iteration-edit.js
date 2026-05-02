@@ -193,10 +193,13 @@ const beginAddIteration = (trigger) => {
         if (e.key === 'Enter') { e.preventDefault(); committed = true; save(); }
         if (e.key === 'Escape') resetTrigger();
     });
-    outputInput.addEventListener('blur', () => { if (!committed) { committed = true; save(); } });
     dateInput.addEventListener('keydown', e => {
         if (e.key === 'Tab') return;
         if (e.key === 'Escape') resetTrigger();
+    });
+    trigger.addEventListener('focusout', (e) => {
+        if (trigger.contains(e.relatedTarget)) return;
+        if (!committed) { committed = true; save(); }
     });
 };
 
