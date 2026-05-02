@@ -14,6 +14,9 @@ class BasicForecaster implements ForecastInterface
         private readonly TeamStatisticsService $teamStatisticsService,
         private int $numberOfSimulations,
     ) {
+        if ($numberOfSimulations < 1) {
+            throw new \InvalidArgumentException('numberOfSimulations must be at least 1.');
+        }
     }
 
     public function forecast(Team $team, int $numberOfIterations, int $outputAmount): Forecast
@@ -52,8 +55,8 @@ class BasicForecaster implements ForecastInterface
     private function calculateProbabilityForRequestedTarget(array $simulations, int $target): float
     {
         $countSuccessful = 0;
-        foreach ($simulations as $key => $value) {
-            if ($value >= $target) {
+        foreach ($simulations as $simulation) {
+            if ($simulation >= $target) {
                 $countSuccessful++;
             }
         }

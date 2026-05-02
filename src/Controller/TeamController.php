@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -32,11 +33,8 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team', name: 'app_team_create', methods: ['POST'])]
-    public function create(#[MapRequestPayload] TeamCreateRequest $teamCreateRequest): JsonResponse
+    public function create(#[MapRequestPayload] TeamCreateRequest $teamCreateRequest, #[CurrentUser] User $user): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         try {
             $team = $this->teamService->create($teamCreateRequest->name, $user);
         } catch (TooManyTeamsException $e) {
@@ -47,11 +45,8 @@ final class TeamController extends AbstractController
     }
 
     #[Route('/team', name: 'app_team', methods: ['GET'])]
-    public function index(): Response
+    public function index(#[CurrentUser] User $user): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
         return $this->render('team/index.html.twig', [
             'teams' => $this->teamService->findTeamsForUser($user),
         ]);
