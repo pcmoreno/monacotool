@@ -38,6 +38,8 @@ final class AccountController extends AbstractController
         #[MapRequestPayload] RegistrationRequest $request,
         Request $httpRequest,
     ): JsonResponse {
+        // getClientIp() relies on framework.trusted_proxies being set correctly when
+        // the app runs behind a load balancer; without it, X-Forwarded-For can be spoofed.
         if (!$this->registerLimiter->create($httpRequest->getClientIp())->consume(1)->isAccepted()) {
             return new JsonResponse(['errors' => ['Too many attempts. Please try again later.']], 429);
         }

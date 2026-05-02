@@ -23,8 +23,6 @@ class UserService
         $user->setName($name);
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
 
-        $this->userRepository->save($user);
-
         return $user;
     }
 

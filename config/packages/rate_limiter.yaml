@@ -1,3 +1,6 @@
+# Rate limiter uses the default cache pool (in-memory in dev, file-based otherwise).
+# For production deployments with multiple server instances, configure a shared
+# cache adapter (e.g. Redis) via framework.cache.pools or the CACHE_DSN env var.
 framework:
     rate_limiter:
         register:

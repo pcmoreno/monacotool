@@ -11,13 +11,14 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class AccountService
+final class AccountService
 {
     public function __construct(
         private readonly UserService $userService,
         private readonly UserRepository $userRepository,
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly string $mailerFrom,
     ) {
     }
 
@@ -27,16 +28,17 @@ class AccountService
             throw new EmailAlreadyExistsException();
         }
 
+        $plainToken = $this->generateToken();
         $user = $this->userService->create($email, $name, $plainPassword);
-        $user->setEmailVerificationToken($this->generateToken());
-        $this->userRepository->save($user);
+        $user->setEmailVerificationToken(hash('sha256', $plainToken));
+        $this->userRepository->save($user); // single flush: persists user + token together
 
-        $this->sendVerificationEmail($user);
+        $this->sendVerificationEmail($user, $plainToken);
     }
 
-    public function verifyEmailByToken(string $token): ?User
+    public function verifyEmailByToken(string $plainToken): ?User
     {
-        $user = $this->userRepository->findByVerificationToken($token);
+        $user = $this->userRepository->findByVerificationToken(hash('sha256', $plainToken));
         if (!$user) {
             return null;
         }
@@ -55,32 +57,34 @@ class AccountService
             return;
         }
 
-        $user->setEmailVerificationToken($this->generateToken());
+        $plainToken = $this->generateToken();
+        $user->setEmailVerificationToken(hash('sha256', $plainToken));
         $this->userRepository->save($user);
 
-        $this->sendVerificationEmail($user);
+        $this->sendVerificationEmail($user, $plainToken);
     }
 
     public function sendPasswordResetEmail(string $email): void
     {
         $user = $this->userRepository->findOneBy(['email' => mb_strtolower($email)]);
-        if (!$user) {
+        if (!$user || !$user->isVerified()) {
             return;
         }
 
-        $user->setPasswordResetToken($this->generateToken());
+        $plainToken = $this->generateToken();
+        $user->setPasswordResetToken(hash('sha256', $plainToken));
         $user->setPasswordResetExpiresAt(new \DateTimeImmutable('+1 hour'));
         $this->userRepository->save($user);
 
         $url = $this->urlGenerator->generate(
             'app_login',
-            ['reset-token' => $user->getPasswordResetToken()],
+            ['reset-token' => $plainToken],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );
 
         $this->mailer->send(
             (new TemplatedEmail())
-                ->from('noreply@monacotool.local')
+                ->from($this->mailerFrom)
                 ->to($user->getEmail())
                 ->subject('Reset your MonacoTool password')
                 ->htmlTemplate('email/password-reset.html.twig')
@@ -88,9 +92,9 @@ class AccountService
         );
     }
 
-    public function resetPassword(string $token, string $newPassword): bool
+    public function resetPassword(string $plainToken, string $newPassword): bool
     {
-        $user = $this->userRepository->findByPasswordResetToken($token);
+        $user = $this->userRepository->findByPasswordResetToken(hash('sha256', $plainToken));
         if (!$user || $user->getPasswordResetExpiresAt() < new \DateTimeImmutable()) {
             return false;
         }
@@ -102,17 +106,17 @@ class AccountService
         return true;
     }
 
-    private function sendVerificationEmail(User $user): void
+    private function sendVerificationEmail(User $user, string $plainToken): void
     {
         $url = $this->urlGenerator->generate(
             'app_verify_email',
-            ['token' => $user->getEmailVerificationToken()],
+            ['token' => $plainToken],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );
 
         $this->mailer->send(
             (new TemplatedEmail())
-                ->from('noreply@monacotool.local')
+                ->from($this->mailerFrom)
                 ->to($user->getEmail())
                 ->subject('Verify your MonacoTool account')
                 ->htmlTemplate('email/verification.html.twig')

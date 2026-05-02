@@ -25,15 +25,19 @@ const submitForgotPassword = async () => {
     btn.disabled = true;
 
     try {
-        await apiFetch('/forgot-password', {
+        const response = await apiFetch('/forgot-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: document.getElementById('forgot-email').value.trim() }),
         });
 
-        feedback.textContent = 'If that email is registered, a reset link has been sent.';
+        if (response.status === 429) {
+            feedback.textContent = 'Too many attempts. Please try again later.';
+        } else {
+            feedback.textContent = 'If that email is registered, a reset link has been sent.';
+            document.getElementById('forgot-email').value = '';
+        }
         feedback.classList.remove('hidden');
-        document.getElementById('forgot-email').value = '';
     } catch {
         feedback.textContent = 'Something went wrong. Please try again.';
         feedback.classList.remove('hidden');
@@ -63,13 +67,17 @@ const submitResend = async () => {
     btn.disabled = true;
 
     try {
-        await apiFetch('/resend-verification', {
+        const response = await apiFetch('/resend-verification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: document.getElementById('resend-email').value.trim() }),
         });
 
-        feedback.textContent = 'If that email exists and is unverified, a new link has been sent.';
+        if (response.status === 429) {
+            feedback.textContent = 'Too many attempts. Please try again later.';
+        } else {
+            feedback.textContent = 'If that email exists and is unverified, a new link has been sent.';
+        }
         feedback.classList.remove('hidden');
     } catch {
         feedback.textContent = 'Something went wrong. Please try again.';
