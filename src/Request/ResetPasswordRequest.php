@@ -10,16 +10,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     'this.password === this.confirmPassword',
     message: 'Passwords do not match.'
 )]
-final class RegistrationRequest
+final class ResetPasswordRequest
 {
     public function __construct(
         #[Assert\NotBlank]
-        #[Assert\Email]
-        public readonly string $email,
-
-        #[Assert\NotBlank]
-        #[Assert\Length(max: 60)]
-        public readonly string $name,
+        public readonly string $token,
 
         #[Assert\NotBlank]
         #[Assert\Length(min: 8, max: 72, minMessage: 'Password must be at least 8 characters.', maxMessage: 'Password must be 72 characters or fewer.')]

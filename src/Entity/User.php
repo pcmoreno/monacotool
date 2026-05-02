@@ -28,12 +28,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private string $password;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 60, nullable: true)]
     private ?string $name = null;
 
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     private array $roles = [];
+
+    #[ORM\Column]
+    private bool $isVerified = false;
+
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    private ?string $emailVerificationToken = null;
+
+    #[ORM\Column(length: 64, nullable: true, unique: true)]
+    private ?string $passwordResetToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $passwordResetExpiresAt = null;
 
     /** @var Collection<int, Membership> */
     #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
@@ -103,6 +115,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getEmailVerificationToken(): ?string
+    {
+        return $this->emailVerificationToken;
+    }
+
+    public function setEmailVerificationToken(?string $token): self
+    {
+        $this->emailVerificationToken = $token;
+
+        return $this;
+    }
+
+    public function getPasswordResetToken(): ?string
+    {
+        return $this->passwordResetToken;
+    }
+
+    public function setPasswordResetToken(?string $token): self
+    {
+        $this->passwordResetToken = $token;
+
+        return $this;
+    }
+
+    public function getPasswordResetExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->passwordResetExpiresAt;
+    }
+
+    public function setPasswordResetExpiresAt(?\DateTimeImmutable $expiresAt): self
+    {
+        $this->passwordResetExpiresAt = $expiresAt;
 
         return $this;
     }

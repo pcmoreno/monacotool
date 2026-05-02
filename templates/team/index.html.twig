@@ -38,6 +38,29 @@
     </div>
 </div>
 
+{% set welcome_name = app.flashes('welcome')|first %}
+{% if welcome_name %}
+<div id="welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4 text-center">
+        <button id="close-welcome-modal" type="button"
+                class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
+        <h2 class="text-2xl font-bold text-graphite-900 mb-2">Welcome, {{ welcome_name }}!</h2>
+        <p class="text-sm text-graphite-500 mb-6">Your account is verified. Create your first team to start forecasting.</p>
+        <div class="flex flex-col gap-3">
+            <button id="welcome-create-team" type="button"
+                    class="w-full rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
+                Create your first team
+            </button>
+            <button id="welcome-dismiss" type="button"
+                    class="w-full rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">
+                I'll look around first
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div id="team-create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
     <div id="team-create-backdrop" class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
