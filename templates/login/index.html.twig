@@ -36,9 +36,95 @@
             </button>
         </form>
 
+        <div class="mt-4 flex justify-center gap-6 text-sm text-graphite-500">
+            <button id="open-forgot-modal" type="button" class="hover:text-primary-600 transition">Forgot password?</button>
+            {% if is_not_verified %}
+                <button id="open-resend-modal" type="button" class="hover:text-primary-600 transition">Resend verification email</button>
+            {% endif %}
+        </div>
+
         <p class="mt-6 text-center text-sm text-graphite-500">
             <a href="{{ path('home') }}" class="text-primary-600 hover:underline">Back to home</a>
         </p>
     </div>
 </div>
+
+{# Forgot password modal #}
+<div id="forgot-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div id="forgot-backdrop" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
+        <button id="close-forgot-modal" type="button"
+                class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
+        <h2 class="text-xl font-bold text-graphite-900 mb-2">Forgot password?</h2>
+        <p class="text-sm text-graphite-500 mb-5">Enter your email and we'll send you a reset link.</p>
+        <div class="space-y-4">
+            <div>
+                <label for="forgot-email" class="block text-sm font-medium text-graphite-700 mb-1">Email</label>
+                <input id="forgot-email" type="email" autocomplete="email"
+                       class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+            <button id="forgot-submit" type="button"
+                    class="w-full rounded-md bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
+                Send reset link
+            </button>
+        </div>
+        <div id="forgot-feedback" class="hidden mt-4 text-sm text-graphite-500 text-center"></div>
+    </div>
+</div>
+
+{# Resend verification modal (shown when account not verified) #}
+{% if is_not_verified %}
+<div id="resend-verification-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div id="resend-backdrop" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
+        <button id="close-resend-modal" type="button"
+                class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
+        <h2 class="text-xl font-bold text-graphite-900 mb-2">Resend verification email</h2>
+        <p class="text-sm text-graphite-500 mb-5">Enter your email and we'll send you a new confirmation link.</p>
+        <div class="space-y-4">
+            <div>
+                <label for="resend-email" class="block text-sm font-medium text-graphite-700 mb-1">Email</label>
+                <input id="resend-email" type="email" autocomplete="email" value="{{ last_username }}"
+                       class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+            <button id="resend-submit" type="button"
+                    class="w-full rounded-md bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
+                Resend link
+            </button>
+        </div>
+        <div id="resend-feedback" class="hidden mt-4 text-sm text-graphite-500 text-center"></div>
+    </div>
+</div>
+{% endif %}
+
+{# Reset password modal — opened by JS when ?reset-token= is in the URL #}
+<div id="reset-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
+        <h2 class="text-xl font-bold text-graphite-900 mb-6">Set a new password</h2>
+        <input type="hidden" id="reset-token">
+
+        <div id="reset-errors" class="hidden mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 space-y-1"></div>
+
+        <div class="space-y-4">
+            <div>
+                <label for="reset-password-input" class="block text-sm font-medium text-graphite-700 mb-1">New password</label>
+                <input id="reset-password-input" type="password" autocomplete="new-password"
+                       class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+            <div>
+                <label for="reset-confirm-input" class="block text-sm font-medium text-graphite-700 mb-1">Confirm password</label>
+                <input id="reset-confirm-input" type="password" autocomplete="new-password"
+                       class="block w-full rounded-md border border-graphite-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+            <button id="reset-submit" type="button"
+                    class="w-full rounded-md bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
+                Set new password
+            </button>
+        </div>
+        <div id="reset-success" class="hidden mt-4 text-sm text-graphite-500 text-center"></div>
+    </div>
+</div>
+
+<script type="module" src="{{ asset('forgot-password.js') }}"></script>
 {% endblock %}

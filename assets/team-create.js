@@ -48,6 +48,16 @@ document.addEventListener('click', (e) => {
     if (e.target.closest('#close-team-create-modal')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-backdrop')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-submit')) { submitTeamCreate(); return; }
+
+    if (e.target.closest('#close-welcome-modal') || e.target.closest('#welcome-dismiss')) {
+        document.getElementById('welcome-modal')?.classList.add('hidden');
+        return;
+    }
+    if (e.target.closest('#welcome-create-team')) {
+        document.getElementById('welcome-modal')?.classList.add('hidden');
+        openTeamCreate();
+        return;
+    }
 });
 
 document.addEventListener('keydown', (e) => {
