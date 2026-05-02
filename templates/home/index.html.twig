@@ -3,10 +3,13 @@
 {% block title %}MonacoTool{% endblock %}
 
 {% block body %}
-<div class="min-h-full flex flex-col items-center px-6 pt-16">
-    <div class="text-center max-w-xl">
+<div class="min-h-screen grid grid-cols-3">
+    <div></div>
+    <div class="bg-surface px-10 pt-16 flex flex-col items-center">
+    <div class="text-center w-full">
         <h1 class="text-5xl font-bold tracking-tight text-graphite-900 mb-4">MonacoTool</h1>
-        <p class="text-lg text-graphite-500 mb-10">Monte Carlo forecasting for software teams. Predict delivery with confidence.</p>
+        <p class="text-lg text-graphite-500 mb-6">Simple Monte Carlo forecasting for agile teams. No spreadsheets, no guesswork.</p>
+        <p class="text-sm text-graphite-500 mb-10">Add your team's past iteration outputs, pick a target, and MonacoTool runs thousands of simulations to tell you the probability of hitting it. The more iterations you log, the sharper the forecast.<br><br>Getting started takes two minutes — create an account and start logging iterations right away. Already have an account? Just log in.</p>
 
         {% if app.user %}
             <p class="text-sm text-graphite-500 mb-6">Logged in as <span class="font-medium text-graphite-700">{{ app.user.name ?? app.user.email }}</span></p>
@@ -27,6 +30,8 @@
             </div>
         {% endif %}
     </div>
+    </div>
+    <div></div>
 </div>
 
 {% if not app.user %}
