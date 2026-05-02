@@ -12,6 +12,7 @@ use App\Request\TeamCreateRequest;
 use App\Security\TeamVoter;
 use App\Services\Forecaster\ForecastService;
 use App\Services\TeamService;
+use App\Services\TeamStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,7 @@ final class TeamController extends AbstractController
     public function __construct(
         private readonly ForecastService $forecastService,
         private readonly TeamService $teamService,
+        private readonly TeamStatisticsService $teamStatisticsService,
     ) {
     }
 
@@ -61,8 +63,8 @@ final class TeamController extends AbstractController
     {
         return $this->render('team/show.html.twig', [
             'team' => $team,
-            'outputAverage' => $team->getOutputAverage(),
-            'standardDeviation' => $team->getSampleStandardDeviation(),
+            'outputAverage' => $this->teamStatisticsService->getOutputAverage($team),
+            'standardDeviation' => $this->teamStatisticsService->getSampleStandardDeviation($team),
         ]);
     }
 

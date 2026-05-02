@@ -10,6 +10,7 @@ use App\Request\IterationCreateRequest;
 use App\Request\IterationUpdateRequest;
 use App\Security\TeamVoter;
 use App\Services\IterationService;
+use App\Services\TeamStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -19,8 +20,10 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 #[IsCsrfTokenValid('api', tokenKey: 'X-CSRF-Token', tokenSource: IsCsrfTokenValid::SOURCE_HEADER, methods: ['POST', 'PATCH', 'DELETE'])]
 final class IterationController extends AbstractController
 {
-    public function __construct(private readonly IterationService $iterationService)
-    {
+    public function __construct(
+        private readonly IterationService $iterationService,
+        private readonly TeamStatisticsService $teamStatisticsService,
+    ) {
     }
 
     #[Route('/team/{id}/iteration', name: 'app_iteration_create', methods: ['POST'])]
@@ -39,8 +42,8 @@ final class IterationController extends AbstractController
             'id' => $iteration->getId(),
             'endDate' => $iteration->getEndDate()->format('Y-m-d'),
             'output' => $iteration->getOutput(),
-            'outputAverage' => round($team->getOutputAverage(), 1),
-            'standardDeviation' => round($team->getSampleStandardDeviation(), 3),
+            'outputAverage' => round($this->teamStatisticsService->getOutputAverage($team), 1),
+            'standardDeviation' => round($this->teamStatisticsService->getSampleStandardDeviation($team), 3),
         ], 201);
     }
 
@@ -66,8 +69,8 @@ final class IterationController extends AbstractController
         $team = $iteration->getTeam();
 
         return new JsonResponse([
-            'outputAverage' => round($team->getOutputAverage(), 1),
-            'standardDeviation' => round($team->getSampleStandardDeviation(), 3),
+            'outputAverage' => round($this->teamStatisticsService->getOutputAverage($team), 1),
+            'standardDeviation' => round($this->teamStatisticsService->getSampleStandardDeviation($team), 3),
         ]);
     }
 
@@ -79,8 +82,8 @@ final class IterationController extends AbstractController
         $this->iterationService->delete($iteration);
 
         return new JsonResponse([
-            'outputAverage' => round($team->getOutputAverage(), 1),
-            'standardDeviation' => round($team->getSampleStandardDeviation(), 3),
+            'outputAverage' => round($this->teamStatisticsService->getOutputAverage($team), 1),
+            'standardDeviation' => round($this->teamStatisticsService->getSampleStandardDeviation($team), 3),
         ]);
     }
 }
