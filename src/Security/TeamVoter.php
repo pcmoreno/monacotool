@@ -15,10 +15,11 @@ final class TeamVoter extends Voter
 {
     public const VIEW = 'team.view';
     public const EDIT = 'team.edit';
+    public const DELETE = 'team.delete';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT], true)
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
             && $subject instanceof Team;
     }
 
@@ -40,7 +41,7 @@ final class TeamVoter extends Voter
 
             return match ($attribute) {
                 self::VIEW => true,
-                self::EDIT => $membership->getRole() === TeamRole::Admin,
+                self::EDIT, self::DELETE => $membership->getRole() === TeamRole::Admin,
                 default => false,
             };
         }

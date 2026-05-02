@@ -23,14 +23,14 @@ class Team
     /**
      * @var Collection<int, Iteration>
      */
-    #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team')]
+    #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team', cascade: ['remove'])]
     #[ORM\OrderBy(['endDate' => 'ASC'])]
     private Collection $iterations;
 
     /**
      * @var Collection<int, Forecast>
      */
-    #[ORM\OneToMany(targetEntity: Forecast::class, mappedBy: 'team')]
+    #[ORM\OneToMany(targetEntity: Forecast::class, mappedBy: 'team', cascade: ['remove'])]
     private Collection $forecasts;
 
     /**

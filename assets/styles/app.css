@@ -5,6 +5,12 @@ svg {
   fill: currentColor;
 }
 
+@layer base {
+  input:not([type="hidden"]) {
+    color: var(--color-graphite-900);
+  }
+}
+
 @theme {
   /* Primary — the main interactive/action color */
   --color-primary-50:  #eef2ff;

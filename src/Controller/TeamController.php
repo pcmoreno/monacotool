@@ -63,6 +63,15 @@ final class TeamController extends AbstractController
         ]);
     }
 
+    #[Route('/team/{id}', name: 'app_team_delete', methods: ['DELETE'])]
+    #[IsGranted(TeamVoter::DELETE, subject: 'team')]
+    public function delete(Team $team): JsonResponse
+    {
+        $this->teamService->delete($team);
+
+        return new JsonResponse(null, 204);
+    }
+
     #[Route('/team/{id}/forecast', name: 'app_team_forecast', methods: ['POST'])]
     #[IsGranted(TeamVoter::EDIT, subject: 'team')]
     public function requestForecast(#[MapRequestPayload] ForecastRequest $forecastRequest, Team $team): JsonResponse
