@@ -44,4 +44,27 @@ class BasicForecasterTest extends TestCase
 
         $this->assertSame(0.0, $forecast->getResult());
     }
+
+    public function test_forecast_from_snapshot_returns_one_when_target_always_met(): void
+    {
+        $result = $this->makeForecaster(10.0, 0.0, 500)->forecastFromSnapshot(10.0, 0.0, 500, 1, 10);
+
+        $this->assertSame(1.0, $result);
+    }
+
+    public function test_forecast_from_snapshot_returns_zero_when_target_never_met(): void
+    {
+        $result = $this->makeForecaster(10.0, 0.0, 500)->forecastFromSnapshot(10.0, 0.0, 500, 1, 11);
+
+        $this->assertSame(0.0, $result);
+    }
+
+    public function test_forecast_from_snapshot_uses_provided_stats_not_team(): void
+    {
+        // Forecaster's injected stats return mean=5, but snapshot args pass mean=10 with stddev=0,
+        // so all simulations produce exactly 10 — probability must be 1.0 regardless of the mock
+        $result = $this->makeForecaster(5.0, 0.0, 500)->forecastFromSnapshot(10.0, 0.0, 500, 1, 10);
+
+        $this->assertSame(1.0, $result);
+    }
 }
