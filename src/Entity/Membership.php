@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\MembershipStatus;
 use App\Enum\TeamRole;
 use App\Repository\MembershipRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -27,6 +28,15 @@ class Membership
 
     #[ORM\Column(type: 'string', enumType: TeamRole::class)]
     private TeamRole $role;
+
+    #[ORM\Column(type: 'string', enumType: MembershipStatus::class)]
+    private MembershipStatus $status = MembershipStatus::Active;
+
+    #[ORM\Column(nullable: true)]
+    private ?string $inviteToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $inviteExpiresAt = null;
 
     public function getId(): ?int
     {
@@ -67,5 +77,46 @@ class Membership
         $this->role = $role;
 
         return $this;
+    }
+
+    public function getStatus(): MembershipStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(MembershipStatus $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getInviteToken(): ?string
+    {
+        return $this->inviteToken;
+    }
+
+    public function setInviteToken(?string $inviteToken): self
+    {
+        $this->inviteToken = $inviteToken;
+
+        return $this;
+    }
+
+    public function getInviteExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->inviteExpiresAt;
+    }
+
+    public function setInviteExpiresAt(?\DateTimeImmutable $inviteExpiresAt): self
+    {
+        $this->inviteExpiresAt = $inviteExpiresAt;
+
+        return $this;
+    }
+
+    public function isInviteExpired(): bool
+    {
+        return $this->inviteExpiresAt !== null && $this->inviteExpiresAt < new \DateTimeImmutable();
     }
 }

@@ -6,15 +6,19 @@ namespace App\Controller;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Exception\AlreadyMemberException;
 use App\Exception\TooManyTeamsException;
 use App\Request\ForecastRequest;
+use App\Request\InviteRequest;
 use App\Request\TeamCreateRequest;
 use App\Security\TeamVoter;
 use App\Services\Forecaster\ForecastService;
+use App\Services\InviteService;
 use App\Services\TeamService;
 use App\Services\TeamStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,6 +31,7 @@ final class TeamController extends AbstractController
 {
     public function __construct(
         private readonly ForecastService $forecastService,
+        private readonly InviteService $inviteService,
         private readonly TeamService $teamService,
         private readonly TeamStatisticsService $teamStatisticsService,
     ) {
@@ -70,6 +75,21 @@ final class TeamController extends AbstractController
         $this->teamService->delete($team);
 
         return new JsonResponse(null, 204);
+    }
+
+    #[Route('/team/{id}/invite', name: 'app_team_invite', methods: ['POST'])]
+    #[IsGranted(TeamVoter::EDIT, subject: 'team')]
+    public function invite(#[MapRequestPayload] InviteRequest $inviteRequest, Team $team): JsonResponse
+    {
+        try {
+            $this->inviteService->invite($team, $inviteRequest->name, $inviteRequest->email);
+        } catch (AlreadyMemberException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (TransportExceptionInterface) {
+            return new JsonResponse(['error' => 'Invitation could not be sent due to a mail delivery error. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/team/{id}/forecast', name: 'app_team_forecast', methods: ['POST'])]

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Entity\Membership;
 use App\Entity\User;
 use App\Exception\EmailAlreadyExistsException;
 use App\Repository\UserRepository;
@@ -108,6 +109,14 @@ final class AccountService
         $this->userService->updatePassword($user, $newPassword);
 
         return true;
+    }
+
+    public function finishAccountSetup(Membership $membership, string $name, string $plainPassword): void
+    {
+        $user = $membership->getUser();
+        $user->setName($name);
+        $user->setIsVerified(true);
+        $this->userService->updatePassword($user, $plainPassword);
     }
 
     private function sendVerificationEmail(User $user, string $plainToken): void

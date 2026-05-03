@@ -25,6 +25,12 @@ services:
         arguments:
             $mailerFrom: '%mailer_from%'
 
+    App\Services\InviteService:
+        arguments:
+            $mailerFrom: '%mailer_from%'
+
+    Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator: '@security.authenticator.form_login.main'
+
     App\Services\Forecaster\BasicForecaster:
         arguments:
             $numberOfSimulations: '%number_of_simulations%'

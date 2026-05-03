@@ -7,6 +7,7 @@ namespace App\Tests\Controller;
 use App\Entity\Membership;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Enum\MembershipStatus;
 use App\Enum\TeamRole;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -148,6 +149,38 @@ abstract class AbstractControllerTest extends WebTestCase
         $em = $this->em();
         $em->persist($membership);
         $em->flush();
+    }
+
+    protected function createPendingInvitedUser(string $email): User
+    {
+        $user = new User();
+        $user->setEmail($email);
+        $user->setName('Invited User');
+        $user->setPassword('');
+        $user->setIsVerified(false);
+
+        $em = $this->em();
+        $em->persist($user);
+        $em->flush();
+
+        return $user;
+    }
+
+    protected function createPendingMembership(Team $team, User $user, string $plainToken): Membership
+    {
+        $membership = new Membership();
+        $membership->setUser($user);
+        $membership->setTeam($team);
+        $membership->setRole(TeamRole::User);
+        $membership->setStatus(MembershipStatus::Pending);
+        $membership->setInviteToken(hash('sha256', $plainToken));
+        $membership->setInviteExpiresAt(new \DateTimeImmutable('+7 days'));
+
+        $em = $this->em();
+        $em->persist($membership);
+        $em->flush();
+
+        return $membership;
     }
 
     protected function createForecast(Team $team, int $targetIterations = 10, int $targetOutput = 100): \App\Entity\Forecast

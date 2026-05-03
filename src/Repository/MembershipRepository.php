@@ -17,4 +17,19 @@ class MembershipRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Membership::class);
     }
+
+    public function findByInviteToken(string $hashedToken): ?Membership
+    {
+        return $this->findOneBy(['inviteToken' => $hashedToken]);
+    }
+
+    public function save(Membership $membership): void
+    {
+        $this->getEntityManager()->persist($membership);
+    }
+
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
 }

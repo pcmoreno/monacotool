@@ -110,4 +110,66 @@ class TeamControllerTest extends AbstractControllerTest
 
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
+
+    // --- POST /team/{id}/invite ---
+
+    public function test_invite_requires_authentication(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Theta', $admin);
+
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_FOUND, $response->getStatusCode());
+        $this->assertStringContainsString('/login', $response->headers->get('Location'));
+    }
+
+    public function test_invite_forbidden_for_non_admin_member(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $member = $this->createVerifiedUser('member@example.com');
+        $team = $this->createTeamWithAdmin('Iota', $admin);
+        $this->addMember($team, $member, TeamRole::User);
+
+        $this->client->loginUser($member);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_204_for_admin(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Kappa', $admin);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_422_if_already_active_member(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $member = $this->createVerifiedUser('member@example.com');
+        $team = $this->createTeamWithAdmin('Lambda', $admin);
+        $this->addMember($team, $member, TeamRole::User);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Member',
+            'email' => 'member@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
 }

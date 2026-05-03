@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style="font-family: sans-serif; color: #374151; max-width: 480px; margin: 0 auto; padding: 32px 16px;">
+    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">Team invitation on MonacoTool</h2>
+    <p style="margin-bottom: 12px;">Hi {{ user.name ?? user.email }},</p>
+    <p style="margin-bottom: 24px;">You've been invited to join the team <strong>{{ team.name }}</strong>.</p>
+    <a href="{{ acceptUrl }}"
+       style="display: inline-block; background: #4f46e5; color: #fff; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; margin-right: 12px;">
+        Accept invitation
+    </a>
+    <a href="{{ rejectUrl }}"
+       style="display: inline-block; background: #fff; color: #374151; text-decoration: none; padding: 10px 24px; border-radius: 6px; font-weight: 600; border: 1px solid #d1d5db;">
+        Decline
+    </a>
+    <p style="margin-top: 24px; font-size: 0.875rem; color: #6b7280;">
+        This invitation expires in 7 days.
+    </p>
+</body>
+</html>
