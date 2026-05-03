@@ -79,49 +79,85 @@ const closeForecastDetail = () => {
 };
 
 const probabilityColor = (p) => {
-    const hue = p * 120;
-    return `hsl(${hue}, 70%, 40%)`;
+    if (p <= 0.5) {
+        const lightness = 28 + (p / 0.5) * 14;
+        return `hsl(0, 65%, ${lightness.toFixed(1)}%)`;
+    }
+    if (p >= 0.9) {
+        const lightness = 42 - ((p - 0.9) / 0.1) * 10;
+        return `hsl(120, 65%, ${lightness.toFixed(1)}%)`;
+    }
+    const hue = ((p - 0.5) / 0.4) * 120;
+    return `hsl(${hue}, 65%, 42%)`;
 };
 
-const renderSensitivityTable = (sensitivityTable, targetIterations) => {
+const renderSensitivityTable = (sensitivityTable, targetIterations, targetResult) => {
+    const thead = document.getElementById('fd-sensitivity-thead');
     const tbody = document.getElementById('fd-sensitivity-tbody');
+    thead.innerHTML = '';
     tbody.innerHTML = '';
 
-    const allRows = { ...sensitivityTable, [String(targetIterations)]: null };
-    const sorted = Object.keys(allRows)
-        .map(Number)
-        .sort((a, b) => a - b);
+    const sorted = [];
+    for (let i = targetIterations - 5; i <= targetIterations + 5; i++) {
+        sorted.push(i);
+    }
+
+    const sooner = sorted.filter(i => i < targetIterations);
+    const later = sorted.filter(i => i > targetIterations);
+
+    const groupRow = document.createElement('tr');
+
+    if (sooner.length) {
+        const th = document.createElement('th');
+        th.colSpan = sooner.length;
+        th.className = 'px-3 py-1 text-center text-xs font-semibold text-graphite-400 border-b border-graphite-100';
+        th.textContent = 'Sooner';
+        groupRow.appendChild(th);
+    }
+
+    const targetGroupTh = document.createElement('th');
+    targetGroupTh.className = 'px-3 py-1 text-center text-xs font-bold text-graphite-900 border-x-2 border-t-2 border-graphite-300';
+    targetGroupTh.textContent = targetIterations;
+    groupRow.appendChild(targetGroupTh);
+
+    if (later.length) {
+        const th = document.createElement('th');
+        th.colSpan = later.length;
+        th.className = 'px-3 py-1 text-center text-xs font-semibold text-graphite-400 border-b border-graphite-100';
+        th.textContent = 'Later';
+        groupRow.appendChild(th);
+    }
+
+    const numberRow = document.createElement('tr');
+    const valueRow = document.createElement('tr');
 
     sorted.forEach((iter) => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-graphite-100';
+        const isTarget = iter === targetIterations;
+        const isInvalid = iter <= 0;
+        const val = isTarget ? targetResult : (sensitivityTable[String(iter)] ?? null);
 
-        const iterTd = document.createElement('td');
-        iterTd.className = 'py-2';
-        iterTd.textContent = iter;
-        if (iter === targetIterations) {
-            iterTd.className += ' font-bold text-graphite-900';
-        }
+        const th = document.createElement('th');
+        th.className = 'px-2 py-1 text-center text-xs font-medium' + (isTarget ? ' border-x-2 border-b-2 border-graphite-300' : ' text-graphite-400');
+        th.textContent = isTarget ? '' : (isInvalid ? '' : iter);
+        numberRow.appendChild(th);
 
-        const probTd = document.createElement('td');
-        probTd.className = 'py-2 text-right font-semibold';
+        const td = document.createElement('td');
+        td.className = 'px-2 py-2 text-center text-xs font-bold text-white' + (isTarget ? ' border-x-2 border-b-2 border-graphite-300' : '');
 
-        if (iter === targetIterations) {
-            const resultEl = document.getElementById('fd-result');
-            const val = parseFloat(resultEl.dataset.raw);
-            probTd.textContent = (val * 100).toFixed(1) + '%';
-            probTd.style.color = probabilityColor(val);
-            iterTd.className += ' font-bold';
+        if (isInvalid) {
+            td.style.backgroundColor = '#1a1a1a';
+            td.textContent = '✕';
         } else {
-            const val = allRows[String(iter)];
-            probTd.textContent = (val * 100).toFixed(1) + '%';
-            probTd.style.color = probabilityColor(val);
+            td.style.backgroundColor = probabilityColor(val);
+            td.textContent = (val * 100).toFixed(1) + '%';
         }
 
-        tr.appendChild(iterTd);
-        tr.appendChild(probTd);
-        tbody.appendChild(tr);
+        valueRow.appendChild(td);
     });
+
+    thead.appendChild(groupRow);
+    thead.appendChild(numberRow);
+    tbody.appendChild(valueRow);
 
     document.getElementById('fd-sensitivity-loading').classList.add('hidden');
     document.getElementById('fd-sensitivity-table').classList.remove('hidden');
@@ -150,7 +186,7 @@ const openForecastDetail = async (forecast) => {
     document.getElementById('fd-sensitivity-table').classList.add('hidden');
 
     if (forecast.sensitivityTable) {
-        renderSensitivityTable(forecast.sensitivityTable, forecast.targetIterations);
+        renderSensitivityTable(forecast.sensitivityTable, forecast.targetIterations, forecast.result ?? 0);
         return;
     }
 
@@ -165,7 +201,7 @@ const openForecastDetail = async (forecast) => {
                 data.sensitivityTable = table;
                 tr.dataset.forecast = JSON.stringify(data);
             }
-            renderSensitivityTable(table, forecast.targetIterations);
+            renderSensitivityTable(table, forecast.targetIterations, forecast.result ?? 0);
         } else {
             document.getElementById('fd-sensitivity-loading').textContent = 'Could not load sensitivity data.';
         }
