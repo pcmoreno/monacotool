@@ -24,6 +24,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function save(User $user): void
     {
         $this->getEntityManager()->persist($user);
+    }
+
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 
@@ -56,6 +60,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
-        $this->getEntityManager()->flush();
+        $this->getEntityManager()->flush(); // upgradePassword is called by Symfony mid-request; flush is intentional here
     }
 }

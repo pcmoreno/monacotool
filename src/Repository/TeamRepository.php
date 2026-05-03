@@ -23,12 +23,15 @@ class TeamRepository extends ServiceEntityRepository
     public function save(Team $team): void
     {
         $this->getEntityManager()->persist($team);
-        $this->getEntityManager()->flush();
     }
 
     public function delete(Team $team): void
     {
         $this->getEntityManager()->remove($team);
+    }
+
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 

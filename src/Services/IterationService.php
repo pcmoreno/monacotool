@@ -21,6 +21,7 @@ class IterationService
         $iteration->setEndDate($endDate);
         $iteration->setTeam($team);
         $this->iterationRepository->save($iteration);
+        $this->iterationRepository->flush();
 
         return $iteration;
     }
@@ -36,11 +37,12 @@ class IterationService
         }
 
         $this->iterationRepository->save($iteration);
+        $this->iterationRepository->flush();
     }
 
     public function delete(Iteration $iteration): void
     {
-        $iteration->getTeam()->removeIteration($iteration);
         $this->iterationRepository->delete($iteration);
+        $this->iterationRepository->flush();
     }
 }

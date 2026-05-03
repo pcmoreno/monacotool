@@ -1,21 +1,37 @@
-# Rate limiter uses the default cache pool (in-memory in dev, file-based otherwise).
+# Rate limiters use a dedicated cache pool (cache.rate_limiter).
 # For production deployments with multiple server instances, configure a shared
 # cache adapter (e.g. Redis) via framework.cache.pools or the CACHE_DSN env var.
 framework:
+    cache:
+        pools:
+            cache.rate_limiter:
+                adapter: cache.adapter.filesystem
+
     rate_limiter:
         register:
             policy: fixed_window
             limit: 5
             interval: '1 hour'
+            cache_pool: cache.rate_limiter
         resend_verification:
             policy: fixed_window
             limit: 3
             interval: '1 hour'
+            cache_pool: cache.rate_limiter
         forgot_password:
             policy: fixed_window
             limit: 5
             interval: '1 hour'
+            cache_pool: cache.rate_limiter
         reset_password:
             policy: fixed_window
             limit: 10
             interval: '1 hour'
+            cache_pool: cache.rate_limiter
+
+when@test:
+    framework:
+        cache:
+            pools:
+                cache.rate_limiter:
+                    adapter: cache.adapter.array

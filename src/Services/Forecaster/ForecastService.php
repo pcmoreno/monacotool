@@ -20,6 +20,7 @@ class ForecastService
     {
         $forecast = $this->forecaster->forecast($team, $targetIterations, $targetOutput);
         $this->forecastRepository->save($forecast);
+        $this->forecastRepository->flush();
 
         return $forecast;
     }
@@ -27,5 +28,6 @@ class ForecastService
     public function delete(Forecast $forecast): void
     {
         $this->forecastRepository->delete($forecast);
+        $this->forecastRepository->flush();
     }
 }
