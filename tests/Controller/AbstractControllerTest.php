@@ -150,6 +150,23 @@ abstract class AbstractControllerTest extends WebTestCase
         $em->flush();
     }
 
+    protected function createForecast(Team $team, int $targetIterations = 10, int $targetOutput = 100): \App\Entity\Forecast
+    {
+        $forecast = new \App\Entity\Forecast();
+        $forecast->setTeam($team);
+        $forecast->setTargetIterations($targetIterations);
+        $forecast->setTargetOutput($targetOutput);
+        $forecast->setNumberOfSimulations(500);
+        $forecast->setResult(0.75);
+        $forecast->setTeamStatsSnapshot(['mean' => 10.0, 'std_dev' => 2.0]);
+
+        $em = $this->em();
+        $em->persist($forecast);
+        $em->flush();
+
+        return $forecast;
+    }
+
     private function purgeDatabase(): void
     {
         $em = $this->em();
