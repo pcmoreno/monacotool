@@ -132,7 +132,7 @@ class InviteControllerTest extends AbstractControllerTest
 
     // --- GET /invite/{token}/reject ---
 
-    public function test_reject_rejects_membership_and_shows_page(): void
+    public function test_reject_shows_confirmation_page_without_rejecting(): void
     {
         $admin = $this->createVerifiedUser('admin@example.com');
         $team = $this->createTeamWithAdmin('Eta', $admin);
@@ -140,6 +140,24 @@ class InviteControllerTest extends AbstractControllerTest
         $membership = $this->createPendingMembership($team, $member, 'reject-token');
 
         $this->client->request('GET', '/invite/reject-token/reject');
+
+        $this->assertResponseIsSuccessful();
+
+        $this->em()->clear();
+        $fresh = $this->em()->find(Membership::class, $membership->getId());
+        $this->assertSame(MembershipStatus::Pending, $fresh->getStatus());
+    }
+
+    // --- POST /invite/{token}/reject ---
+
+    public function test_reject_post_rejects_membership(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Iota', $admin);
+        $member = $this->createVerifiedUser('iota@example.com');
+        $membership = $this->createPendingMembership($team, $member, 'reject-post-token');
+
+        $this->client->request('POST', '/invite/reject-post-token/reject');
 
         $this->assertResponseIsSuccessful();
 

@@ -14,12 +14,13 @@ use App\Repository\MembershipRepository;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class InviteService
 {
     public function __construct(
-        private readonly UserService $userService,
+        private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly UserRepository $userRepository,
         private readonly MembershipRepository $membershipRepository,
         private readonly MailerInterface $mailer,
@@ -32,7 +33,7 @@ final class InviteService
     {
         $email = mb_strtolower($email);
 
-        $this->guardNotAlreadyActiveMember($team, $email);
+        $this->guardNotAlreadyPendingOrActiveMember($team, $email);
 
         $user = $this->userRepository->findOneBy(['email' => $email]);
         $isNewUser = $user === null;
@@ -48,7 +49,8 @@ final class InviteService
         $plainToken = $this->generateToken();
         $hashedToken = hash('sha256', $plainToken);
 
-        $membership = new Membership();
+        // Reuse an existing rejected row to avoid hitting the unique (user, team) constraint
+        $membership = $this->findRejectedMembership($team, $email) ?? new Membership();
         $membership->setUser($user);
         $membership->setTeam($team);
         $membership->setRole(TeamRole::User);
@@ -66,6 +68,22 @@ final class InviteService
         if ($isNewUser) {
             $this->userRepository->save($user);
         }
+        $this->membershipRepository->save($membership);
+        $this->membershipRepository->flush();
+    }
+
+    public function completeSetup(Membership $membership, string $name, string $plainPassword): void
+    {
+        $user = $membership->getUser();
+        $user->setName($name);
+        $user->setIsVerified(true);
+        $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
+
+        $membership->setStatus(MembershipStatus::Active);
+        $membership->setInviteToken(null);
+        $membership->setInviteExpiresAt(null);
+
+        $this->userRepository->save($user);
         $this->membershipRepository->save($membership);
         $this->membershipRepository->flush();
     }
@@ -99,16 +117,33 @@ final class InviteService
         $this->membershipRepository->flush();
     }
 
-    private function guardNotAlreadyActiveMember(Team $team, string $email): void
+    private function guardNotAlreadyPendingOrActiveMember(Team $team, string $email): void
+    {
+        foreach ($team->getMemberships() as $membership) {
+            if ($membership->getUser()->getEmail() !== $email) {
+                continue;
+            }
+
+            match ($membership->getStatus()) {
+                MembershipStatus::Active => throw new AlreadyMemberException('This user is already a member of this team.'),
+                MembershipStatus::Pending => throw new AlreadyMemberException('This user has already been invited.'),
+                default => null,
+            };
+        }
+    }
+
+    private function findRejectedMembership(Team $team, string $email): ?Membership
     {
         foreach ($team->getMemberships() as $membership) {
             if (
                 $membership->getUser()->getEmail() === $email
-                && $membership->getStatus() === MembershipStatus::Active
+                && $membership->getStatus() === MembershipStatus::Rejected
             ) {
-                throw new AlreadyMemberException();
+                return $membership;
             }
         }
+
+        return null;
     }
 
     private function sendNewUserInviteEmail(User $user, Team $team, string $plainToken): void

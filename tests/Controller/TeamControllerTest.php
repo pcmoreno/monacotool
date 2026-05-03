@@ -172,4 +172,20 @@ class TeamControllerTest extends AbstractControllerTest
 
         $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
     }
+
+    public function test_invite_returns_422_if_already_pending(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Mu', $admin);
+        $pending = $this->createPendingInvitedUser('pending@example.com');
+        $this->createPendingMembership($team, $pending, 'existing-token');
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Pending User',
+            'email' => 'pending@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
 }

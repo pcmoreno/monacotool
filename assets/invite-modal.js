@@ -56,15 +56,27 @@ const addPendingMember = (name, email) => {
     const ul = document.querySelector('.space-y-2');
     if (!ul) return;
 
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'text-sm text-graphite-400';
+    nameSpan.textContent = name || email;
+
+    const invitedBadge = document.createElement('span');
+    invitedBadge.className = 'text-xs text-amber-500 font-medium';
+    invitedBadge.textContent = 'Invited';
+
+    const roleSpan = document.createElement('span');
+    roleSpan.className = 'text-xs text-graphite-400 font-medium';
+    roleSpan.textContent = 'User';
+
+    const badgeGroup = document.createElement('div');
+    badgeGroup.className = 'flex items-center gap-2';
+    badgeGroup.appendChild(invitedBadge);
+    badgeGroup.appendChild(roleSpan);
+
     const li = document.createElement('li');
     li.className = 'flex items-center justify-between';
-    li.innerHTML = `
-        <span class="text-sm text-graphite-400">${name || email}</span>
-        <div class="flex items-center gap-2">
-            <span class="text-xs text-amber-500 font-medium">Invited</span>
-            <span class="text-xs text-graphite-400 font-medium">User</span>
-        </div>
-    `;
+    li.appendChild(nameSpan);
+    li.appendChild(badgeGroup);
     ul.appendChild(li);
 };
 

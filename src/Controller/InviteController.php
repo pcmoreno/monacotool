@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Services\AccountService;
 use App\Services\InviteService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +16,6 @@ final class InviteController extends AbstractController
 {
     public function __construct(
         private readonly InviteService $inviteService,
-        private readonly AccountService $accountService,
         private readonly UserAuthenticatorInterface $userAuthenticator,
         private readonly FormLoginAuthenticator $formLoginAuthenticator,
     ) {
@@ -78,7 +76,7 @@ final class InviteController extends AbstractController
         $team = $membership->getTeam();
         $user = $membership->getUser();
 
-        $this->accountService->finishAccountSetup($membership, $name, $password);
+        $this->inviteService->completeSetup($membership, $name, $password);
 
         try {
             $response = $this->userAuthenticator->authenticateUser(
@@ -86,12 +84,9 @@ final class InviteController extends AbstractController
                 $this->formLoginAuthenticator,
                 $request,
             );
-            $this->inviteService->accept($membership);
 
             return $response ?? $this->redirectToRoute('app_team_show', ['id' => $team->getId()]);
         } catch (\Throwable) {
-            $this->inviteService->accept($membership);
-
             return $this->redirectToRoute('app_login');
         }
     }
@@ -127,6 +122,21 @@ final class InviteController extends AbstractController
 
     #[Route('/invite/{token}/reject', name: 'app_invite_reject', methods: ['GET'])]
     public function reject(string $token): Response
+    {
+        $membership = $this->inviteService->findPendingByToken($token);
+
+        if (!$membership || $membership->isInviteExpired()) {
+            return $this->render('invite/invalid.html.twig');
+        }
+
+        return $this->render('invite/reject.html.twig', [
+            'token' => $token,
+            'team' => $membership->getTeam(),
+        ]);
+    }
+
+    #[Route('/invite/{token}/reject', name: 'app_invite_reject_post', methods: ['POST'])]
+    public function rejectPost(string $token): Response
     {
         $membership = $this->inviteService->findPendingByToken($token);
 
