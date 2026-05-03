@@ -35,14 +35,27 @@ class BasicForecaster implements ForecastInterface
         return $forecast;
     }
 
+    public function forecastFromSnapshot(float $mean, float $stdDev, int $numberOfSimulations, int $numberOfIterations, int $outputAmount): float
+    {
+        $simulations = $this->runSimulations($mean, $stdDev, $numberOfSimulations, $numberOfIterations);
+
+        return $this->calculateProbabilityForRequestedTarget($simulations, $outputAmount);
+    }
+
     /** @return list<int> */
     private function createSimulations(Team $team, int $numberOfIterations): array
     {
         $mean = $this->teamStatisticsService->getOutputAverage($team);
         $stdDev = $this->teamStatisticsService->getSampleStandardDeviation($team);
 
+        return $this->runSimulations($mean, $stdDev, $this->numberOfSimulations, $numberOfIterations);
+    }
+
+    /** @return list<int> */
+    private function runSimulations(float $mean, float $stdDev, int $numberOfSimulations, int $numberOfIterations): array
+    {
         $simulations = [];
-        for ($i = 0; $i < $this->numberOfSimulations; $i++) {
+        for ($i = 0; $i < $numberOfSimulations; $i++) {
             $simulation = new Simulation($numberOfIterations, $mean, $stdDev);
             $simulation->simulate();
             $simulations[] = array_sum($simulation->getIterations());

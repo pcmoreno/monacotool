@@ -79,10 +79,14 @@ final class TeamController extends AbstractController
         $forecast = $this->forecastService->forecast($team, $forecastRequest->targetIterations, $forecastRequest->targetOutput);
 
         return new JsonResponse([
+            'id' => $forecast->getId(),
             'createdAt' => $forecast->getCreatedAt()->format('Y-m-d H:i'),
             'targetOutput' => $forecast->getTargetOutput(),
             'targetIterations' => $forecast->getTargetIterations(),
+            'numberOfSimulations' => $forecast->getNumberOfSimulations(),
             'result' => $forecast->getResult(),
+            'teamStatsSnapshot' => $forecast->getTeamStatsSnapshot(),
+            'sensitivityTable' => $forecast->getSensitivityTable(),
         ], 201);
     }
 }

@@ -27,6 +27,12 @@ class Forecast
     #[ORM\Column(nullable: true)]
     private ?float $result = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $teamStatsSnapshot = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $sensitivityTable = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -94,6 +100,30 @@ class Forecast
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getTeamStatsSnapshot(): ?array
+    {
+        return $this->teamStatsSnapshot;
+    }
+
+    public function setTeamStatsSnapshot(array $snapshot): self
+    {
+        $this->teamStatsSnapshot = $snapshot;
+
+        return $this;
+    }
+
+    public function getSensitivityTable(): ?array
+    {
+        return $this->sensitivityTable;
+    }
+
+    public function setSensitivityTable(array $table): self
+    {
+        $this->sensitivityTable = $table;
+
+        return $this;
     }
 
     public function getTeam(): ?Team
