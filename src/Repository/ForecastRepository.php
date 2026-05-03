@@ -21,12 +21,15 @@ class ForecastRepository extends ServiceEntityRepository
     public function save(Forecast $forecast): void
     {
         $this->getEntityManager()->persist($forecast);
-        $this->getEntityManager()->flush();
     }
 
     public function delete(Forecast $forecast): void
     {
         $this->getEntityManager()->remove($forecast);
+    }
+
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 }

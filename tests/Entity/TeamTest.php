@@ -10,43 +10,34 @@ use PHPUnit\Framework\TestCase;
 
 class TeamTest extends TestCase
 {
-    public function test_output_average_returns_zero_when_no_iterations(): void
+    public function test_add_iteration_links_team(): void
     {
         $team = new Team();
+        $iteration = new Iteration();
+        $team->addIteration($iteration);
 
-        $this->assertSame(0.0, $team->getOutputAverage());
+        $this->assertSame($team, $iteration->getTeam());
+        $this->assertCount(1, $team->getIterations());
     }
 
-    public function test_output_average_is_correct(): void
-    {
-        $team = $this->teamWithOutputs(10, 20, 30);
-
-        $this->assertSame(20.0, $team->getOutputAverage());
-    }
-
-    public function test_standard_deviation_returns_zero_with_fewer_than_two_iterations(): void
-    {
-        $this->assertSame(0.0, (new Team())->getSampleStandardDeviation());
-        $this->assertSame(0.0, $this->teamWithOutputs(5)->getSampleStandardDeviation());
-    }
-
-    public function test_standard_deviation_is_correct(): void
-    {
-        // {1..10}: mean=5.5, sum sq dev=82.5, sample std dev=sqrt(82.5/9)≈3.0277
-        $team = $this->teamWithOutputs(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-
-        $this->assertEqualsWithDelta(3.0277, $team->getSampleStandardDeviation(), 0.0001);
-    }
-
-    private function teamWithOutputs(int ...$outputs): Team
+    public function test_add_iteration_is_idempotent(): void
     {
         $team = new Team();
-        foreach ($outputs as $output) {
-            $iteration = new Iteration();
-            $iteration->setOutput($output);
-            $team->addIteration($iteration);
-        }
+        $iteration = new Iteration();
+        $team->addIteration($iteration);
+        $team->addIteration($iteration);
 
-        return $team;
+        $this->assertCount(1, $team->getIterations());
+    }
+
+    public function test_remove_iteration_unlinks_team(): void
+    {
+        $team = new Team();
+        $iteration = new Iteration();
+        $team->addIteration($iteration);
+        $team->removeIteration($iteration);
+
+        $this->assertCount(0, $team->getIterations());
+        $this->assertNull($iteration->getTeam());
     }
 }

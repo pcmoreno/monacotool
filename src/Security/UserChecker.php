@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Entity\User;
-use Symfony\Component\Security\Core\Exception\AccountNotVerifiedException;
+use App\Security\EmailNotVerifiedException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -18,7 +18,7 @@ final class UserChecker implements UserCheckerInterface
         }
 
         if (!$user->isVerified()) {
-            throw new AccountNotVerifiedException();
+            throw new EmailNotVerifiedException();
         }
     }
 

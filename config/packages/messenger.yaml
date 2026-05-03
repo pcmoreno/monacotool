@@ -30,3 +30,11 @@ when@dev:
                 sync: 'sync://'
             routing:
                 Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                sync: 'sync://'
+            routing:
+                Symfony\Component\Mailer\Messenger\SendEmailMessage: sync

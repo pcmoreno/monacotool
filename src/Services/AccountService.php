@@ -31,7 +31,8 @@ final class AccountService
         $plainToken = $this->generateToken();
         $user = $this->userService->create($email, $name, $plainPassword);
         $user->setEmailVerificationToken(hash('sha256', $plainToken));
-        $this->userRepository->save($user); // single flush: persists user + token together
+        $this->userRepository->save($user);
+        $this->userRepository->flush(); // single flush: persists user + token together
 
         $this->sendVerificationEmail($user, $plainToken);
     }
@@ -46,6 +47,7 @@ final class AccountService
         $user->setIsVerified(true);
         $user->setEmailVerificationToken(null);
         $this->userRepository->save($user);
+        $this->userRepository->flush();
 
         return $user;
     }
@@ -60,6 +62,7 @@ final class AccountService
         $plainToken = $this->generateToken();
         $user->setEmailVerificationToken(hash('sha256', $plainToken));
         $this->userRepository->save($user);
+        $this->userRepository->flush();
 
         $this->sendVerificationEmail($user, $plainToken);
     }
@@ -75,6 +78,7 @@ final class AccountService
         $user->setPasswordResetToken(hash('sha256', $plainToken));
         $user->setPasswordResetExpiresAt(new \DateTimeImmutable('+1 hour'));
         $this->userRepository->save($user);
+        $this->userRepository->flush();
 
         $url = $this->urlGenerator->generate(
             'app_login',

@@ -34,6 +34,7 @@ class TeamService
         }
 
         $this->teamRepository->save($team);
+        $this->teamRepository->flush();
 
         return $team;
     }
@@ -41,6 +42,7 @@ class TeamService
     public function delete(Team $team): void
     {
         $this->teamRepository->delete($team);
+        $this->teamRepository->flush();
     }
 
     /** @return Team[] */

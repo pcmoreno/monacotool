@@ -35,5 +35,6 @@ class UserService
     {
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
         $this->userRepository->save($user);
+        $this->userRepository->flush();
     }
 }

@@ -24,6 +24,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function save(User $user): void
     {
         $this->getEntityManager()->persist($user);
+    }
+
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 
@@ -39,13 +43,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function hasSuperAdmin(): bool
     {
-        foreach ($this->findAll() as $user) {
-            if ($user->isSuperAdmin()) {
-                return true;
-            }
-        }
-
-        return false;
+        return (bool) $this->createQueryBuilder('u')
+            ->select('1')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_SUPER_ADMIN%')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
@@ -56,6 +60,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
-        $this->getEntityManager()->flush();
+        $this->getEntityManager()->flush(); // upgradePassword is called by Symfony mid-request; flush is intentional here
     }
 }

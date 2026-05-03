@@ -21,12 +21,15 @@ class IterationRepository extends ServiceEntityRepository
     public function save(Iteration $iteration): void
     {
         $this->getEntityManager()->persist($iteration);
-        $this->getEntityManager()->flush();
     }
 
     public function delete(Iteration $iteration): void
     {
         $this->getEntityManager()->remove($iteration);
+    }
+
+    public function flush(): void
+    {
         $this->getEntityManager()->flush();
     }
 }
