@@ -9,5 +9,7 @@ use App\Entity\Team;
 
 interface ForecastInterface
 {
-        public function forecast(Team $team, int $numberOfIterations, int $outputAmount): Forecast;
+    public function forecast(Team $team, int $numberOfIterations, int $outputAmount): Forecast;
+
+    public function forecastFromSnapshot(float $mean, float $stdDev, int $numberOfSimulations, int $numberOfIterations, int $outputAmount): float;
 }
