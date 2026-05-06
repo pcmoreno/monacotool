@@ -9,6 +9,7 @@
         <p class="text-graphite-500 text-sm mb-8">Are you sure you want to decline the invitation to join <strong class="text-graphite-700">{{ team.name }}</strong>?</p>
 
         <form method="post" class="bg-surface shadow rounded-xl px-8 py-8">
+            <input type="hidden" name="_token" value="{{ csrf_token('invite_reject') }}">
             <button type="submit"
                     class="w-full rounded-md bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-red-500 transition">
                 Decline invitation

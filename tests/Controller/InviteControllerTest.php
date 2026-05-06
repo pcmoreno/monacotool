@@ -57,9 +57,13 @@ class InviteControllerTest extends AbstractControllerTest
         $invitedUser = $this->createPendingInvitedUser('finish@example.com');
         $this->createPendingMembership($team, $invitedUser, 'finish-token');
 
+        $crawler = $this->client->request('GET', '/invite/finish-token');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
         $this->client->request('POST', '/invite/finish-token', [
             'name' => 'Ok',
             'password' => 'short',
+            '_token' => $csrfToken,
         ]);
 
         $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $this->client->getResponse()->getStatusCode());
@@ -72,9 +76,13 @@ class InviteControllerTest extends AbstractControllerTest
         $invitedUser = $this->createPendingInvitedUser('newmember@example.com');
         $membership = $this->createPendingMembership($team, $invitedUser, 'complete-token');
 
+        $crawler = $this->client->request('GET', '/invite/complete-token');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
         $this->client->request('POST', '/invite/complete-token', [
             'name' => 'New Member',
             'password' => 'securepassword123',
+            '_token' => $csrfToken,
         ]);
 
         $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
@@ -106,6 +114,7 @@ class InviteControllerTest extends AbstractControllerTest
         $member = $this->createVerifiedUser('member@example.com');
         $this->createPendingMembership($team, $member, 'accept-view-token');
 
+        $this->client->loginUser($member);
         $this->client->request('GET', '/invite/accept-view-token/accept');
 
         $this->assertResponseIsSuccessful();
@@ -120,7 +129,11 @@ class InviteControllerTest extends AbstractControllerTest
         $member = $this->createVerifiedUser('zeta@example.com');
         $membership = $this->createPendingMembership($team, $member, 'accept-post-token');
 
-        $this->client->request('POST', '/invite/accept-post-token/accept');
+        $this->client->loginUser($member);
+        $crawler = $this->client->request('GET', '/invite/accept-post-token/accept');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/accept-post-token/accept', ['_token' => $csrfToken]);
 
         $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
 
@@ -139,6 +152,7 @@ class InviteControllerTest extends AbstractControllerTest
         $member = $this->createVerifiedUser('eta@example.com');
         $membership = $this->createPendingMembership($team, $member, 'reject-token');
 
+        $this->client->loginUser($member);
         $this->client->request('GET', '/invite/reject-token/reject');
 
         $this->assertResponseIsSuccessful();
@@ -157,7 +171,11 @@ class InviteControllerTest extends AbstractControllerTest
         $member = $this->createVerifiedUser('iota@example.com');
         $membership = $this->createPendingMembership($team, $member, 'reject-post-token');
 
-        $this->client->request('POST', '/invite/reject-post-token/reject');
+        $this->client->loginUser($member);
+        $crawler = $this->client->request('GET', '/invite/reject-post-token/reject');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/reject-post-token/reject', ['_token' => $csrfToken]);
 
         $this->assertResponseIsSuccessful();
 

@@ -9,6 +9,7 @@
         <p class="text-graphite-500 text-sm mb-8">You've been invited to join <strong class="text-graphite-700">{{ team.name }}</strong>.</p>
 
         <form method="post" class="bg-surface shadow rounded-xl px-8 py-8">
+            <input type="hidden" name="_token" value="{{ csrf_token('invite_accept') }}">
             <button type="submit"
                     class="w-full rounded-md bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
                 Accept invitation

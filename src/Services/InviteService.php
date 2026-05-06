@@ -26,6 +26,7 @@ final class InviteService
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly string $mailerFrom,
+        private readonly int $inviteTokenExpiryDays,
     ) {
     }
 
@@ -42,7 +43,7 @@ final class InviteService
             $user = new User();
             $user->setEmail($email);
             $user->setName($name);
-            $user->setPassword('');
+            $user->setPassword(bin2hex(random_bytes(32))); // unhashed sentinel — never valid for login
             $user->setIsVerified(false);
         }
 
@@ -56,20 +57,19 @@ final class InviteService
         $membership->setRole(TeamRole::User);
         $membership->setStatus(MembershipStatus::Pending);
         $membership->setInviteToken($hashedToken);
-        $membership->setInviteExpiresAt(new \DateTimeImmutable('+7 days'));
-
-        // Send email before persisting — if delivery fails, nothing is saved
-        if ($isNewUser) {
-            $this->sendNewUserInviteEmail($user, $team, $plainToken);
-        } else {
-            $this->sendExistingUserInviteEmail($user, $team, $plainToken);
-        }
+        $membership->setInviteExpiresAt(new \DateTimeImmutable(sprintf('+%d days', $this->inviteTokenExpiryDays)));
 
         if ($isNewUser) {
             $this->userRepository->save($user);
         }
         $this->membershipRepository->save($membership);
         $this->membershipRepository->flush();
+
+        if ($isNewUser) {
+            $this->sendNewUserInviteEmail($user, $team, $plainToken);
+        } else {
+            $this->sendExistingUserInviteEmail($user, $team, $plainToken);
+        }
     }
 
     public function completeSetup(Membership $membership, string $name, string $plainPassword): void
@@ -158,7 +158,7 @@ final class InviteService
             (new TemplatedEmail())
                 ->from($this->mailerFrom)
                 ->to($user->getEmail())
-                ->subject('You\'ve been invited to join ' . $team->getName() . ' on MonacoTool')
+                ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-new-user.html.twig')
                 ->context(['user' => $user, 'team' => $team, 'url' => $url]),
         );
@@ -182,7 +182,7 @@ final class InviteService
             (new TemplatedEmail())
                 ->from($this->mailerFrom)
                 ->to($user->getEmail())
-                ->subject('You\'ve been invited to join ' . $team->getName() . ' on MonacoTool')
+                ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-existing-user.html.twig')
                 ->context(['user' => $user, 'team' => $team, 'acceptUrl' => $acceptUrl, 'rejectUrl' => $rejectUrl]),
         );

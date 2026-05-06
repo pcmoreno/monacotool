@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Entity\Team;
 use App\Entity\User;
-use App\Exception\AlreadyMemberException;
 use App\Exception\TooManyTeamsException;
 use App\Request\ForecastRequest;
 use App\Request\InviteRequest;
@@ -18,9 +17,11 @@ use App\Services\TeamService;
 use App\Services\TeamStatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
@@ -34,6 +35,7 @@ final class TeamController extends AbstractController
         private readonly InviteService $inviteService,
         private readonly TeamService $teamService,
         private readonly TeamStatisticsService $teamStatisticsService,
+        private readonly RateLimiterFactory $inviteLimiter,
     ) {
     }
 
@@ -79,12 +81,16 @@ final class TeamController extends AbstractController
 
     #[Route('/team/{id}/invite', name: 'app_team_invite', methods: ['POST'])]
     #[IsGranted(TeamVoter::EDIT, subject: 'team')]
-    public function invite(#[MapRequestPayload] InviteRequest $inviteRequest, Team $team): JsonResponse
+    public function invite(#[MapRequestPayload] InviteRequest $inviteRequest, Team $team, Request $request): JsonResponse
     {
+        if (!$this->inviteLimiter->create($request->getClientIp())->consume(1)->isAccepted()) {
+            return new JsonResponse(['error' => 'Too many invitations sent. Please try again later.'], 429);
+        }
+
         try {
             $this->inviteService->invite($team, $inviteRequest->name, $inviteRequest->email);
-        } catch (AlreadyMemberException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (AlreadyMemberException) {
+            // silently succeed — returning 422 leaks membership/pending status to the caller
         } catch (TransportExceptionInterface) {
             return new JsonResponse(['error' => 'Invitation could not be sent due to a mail delivery error. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
