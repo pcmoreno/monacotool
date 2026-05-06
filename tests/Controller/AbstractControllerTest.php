@@ -183,6 +183,23 @@ abstract class AbstractControllerTest extends WebTestCase
         return $membership;
     }
 
+    protected function createExpiredMembership(Team $team, User $user, string $plainToken): Membership
+    {
+        $membership = new Membership();
+        $membership->setUser($user);
+        $membership->setTeam($team);
+        $membership->setRole(TeamRole::User);
+        $membership->setStatus(MembershipStatus::Pending);
+        $membership->setInviteToken(hash('sha256', $plainToken));
+        $membership->setInviteExpiresAt(new \DateTimeImmutable('-1 day'));
+
+        $em = $this->em();
+        $em->persist($membership);
+        $em->flush();
+
+        return $membership;
+    }
+
     protected function createForecast(Team $team, int $targetIterations = 10, int $targetOutput = 100): \App\Entity\Forecast
     {
         $forecast = new \App\Entity\Forecast();

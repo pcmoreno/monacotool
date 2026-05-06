@@ -50,7 +50,7 @@
         </div>
 
         <p class="mt-6 text-center text-sm text-graphite-500">
-            <a href="{{ path('home') }}" class="text-primary-600 hover:underline">Back to home</a>
+            New here? <a href="{{ path('home') }}" class="text-primary-600 hover:underline">Create an account</a>
         </p>
     </div>
 </div>
@@ -129,6 +129,10 @@
             </button>
         </div>
         <div id="reset-success" class="hidden mt-4 text-sm text-graphite-500 text-center"></div>
+        <a id="reset-login-link" href="{{ path('app_login') }}"
+           class="hidden mt-4 w-full block text-center rounded-md bg-surface px-5 py-2 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">
+            Return to login
+        </a>
     </div>
 </div>
 

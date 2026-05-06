@@ -6,7 +6,11 @@
 <div class="min-h-full flex flex-col justify-center items-center px-6 py-24">
     <div class="w-full max-w-sm text-center">
         <h1 class="text-2xl font-bold text-graphite-900 mb-2">MonacoTool</h1>
-        <p class="text-graphite-500 text-sm mb-8">You've been invited to join <strong class="text-graphite-700">{{ team.name }}</strong>.</p>
+        {% if inviterName %}
+            <p class="text-graphite-500 text-sm mb-8"><strong class="text-graphite-700">{{ inviterName }}</strong> has invited you to join <strong class="text-graphite-700">{{ team.name }}</strong>.</p>
+        {% else %}
+            <p class="text-graphite-500 text-sm mb-8">You've been invited to join <strong class="text-graphite-700">{{ team.name }}</strong>.</p>
+        {% endif %}
 
         <form method="post" class="bg-surface shadow rounded-xl px-8 py-8">
             <input type="hidden" name="_token" value="{{ csrf_token('invite_accept') }}">

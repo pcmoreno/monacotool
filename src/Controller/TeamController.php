@@ -82,14 +82,14 @@ final class TeamController extends AbstractController
 
     #[Route('/team/{id}/invite', name: 'app_team_invite', methods: ['POST'])]
     #[IsGranted(TeamVoter::EDIT, subject: 'team')]
-    public function invite(#[MapRequestPayload] InviteRequest $inviteRequest, Team $team, Request $request): JsonResponse
+    public function invite(#[MapRequestPayload] InviteRequest $inviteRequest, Team $team, Request $request, #[CurrentUser] User $user): JsonResponse
     {
         if (!$this->inviteLimiter->create($request->getClientIp())->consume(1)->isAccepted()) {
             return new JsonResponse(['error' => 'Too many invitations sent. Please try again later.'], 429);
         }
 
         try {
-            $this->inviteService->invite($team, $inviteRequest->name, $inviteRequest->email);
+            $this->inviteService->invite($team, $inviteRequest->name, $inviteRequest->email, $user);
         } catch (AlreadyMemberException) {
             // silently succeed — returning 422 leaks membership/pending status to the caller
         } catch (TransportExceptionInterface) {

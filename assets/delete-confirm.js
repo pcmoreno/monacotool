@@ -37,7 +37,9 @@ document.addEventListener('turbo:before-cache', () => {
     document.removeEventListener('click', onClick);
 });
 
-export const showDeleteConfirm = (callback) => {
+export const showDeleteConfirm = (description, callback) => {
+    const descEl = document.getElementById('confirm-delete-description');
+    if (descEl) descEl.textContent = description || 'Are you sure you want to delete this? This action cannot be undone.';
     callbackQueue.push(callback);
     document.getElementById('confirm-delete-modal')?.classList.remove('hidden');
 };

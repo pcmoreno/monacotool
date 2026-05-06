@@ -126,6 +126,7 @@ const submitResetPassword = async () => {
             success.textContent = data.message;
             success.classList.remove('hidden');
             btn.classList.add('hidden');
+            document.getElementById('reset-login-link')?.classList.remove('hidden');
             window.history.replaceState({}, '', '/login');
         } else {
             const errors = data.errors

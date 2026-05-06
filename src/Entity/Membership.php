@@ -38,6 +38,9 @@ class Membership
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $inviteExpiresAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?string $inviterName = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -111,6 +114,18 @@ class Membership
     public function setInviteExpiresAt(?\DateTimeImmutable $inviteExpiresAt): self
     {
         $this->inviteExpiresAt = $inviteExpiresAt;
+
+        return $this;
+    }
+
+    public function getInviterName(): ?string
+    {
+        return $this->inviterName;
+    }
+
+    public function setInviterName(?string $inviterName): self
+    {
+        $this->inviterName = $inviterName;
 
         return $this;
     }

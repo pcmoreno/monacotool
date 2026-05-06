@@ -14,7 +14,7 @@ final class Version20260503191314 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add membership status, invite_token, and invite_expires_at columns';
     }
 
     public function up(Schema $schema): void

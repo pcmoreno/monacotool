@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-graphite-900">Teams — {{ app.user.name ?? app.user.email }}</h1>
             <div class="flex items-center gap-4">
-                <button id="open-team-create-modal" type="button"
+                <button id="open-team-create-modal" data-open-team-create type="button"
                         class="rounded-md bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-primary-500 transition">
                     Create a new team
                 </button>
@@ -19,7 +19,11 @@
         <div id="teams-container">
             {% if teams is empty %}
                 <div id="teams-empty" class="rounded-xl bg-surface shadow ring-1 ring-graphite-200 p-10 text-center">
-                    <p class="text-graphite-400">You are not a member of any teams yet.</p>
+                    <p class="text-graphite-400 mb-4">You are not a member of any teams yet.</p>
+                    <button data-open-team-create type="button"
+                            class="rounded-md bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-primary-500 transition">
+                        Create your first team
+                    </button>
                 </div>
             {% else %}
                 <div id="teams-grid" class="grid gap-4 sm:grid-cols-2">

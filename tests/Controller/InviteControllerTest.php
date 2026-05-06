@@ -19,7 +19,7 @@ class InviteControllerTest extends AbstractControllerTest
         $this->client->request('GET', '/invite/no-such-token');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('p', 'invalid or has expired');
+        $this->assertSelectorTextContains('p', 'invalid');
     }
 
     public function test_setup_shows_form_for_unverified_user(): void
@@ -104,7 +104,7 @@ class InviteControllerTest extends AbstractControllerTest
         $this->client->request('GET', '/invite/no-such-token/accept');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('p', 'invalid or has expired');
+        $this->assertSelectorTextContains('p', 'invalid');
     }
 
     public function test_accept_shows_page_for_valid_token(): void
@@ -183,6 +183,71 @@ class InviteControllerTest extends AbstractControllerTest
         $fresh = $this->em()->find(Membership::class, $membership->getId());
         $this->assertSame(MembershipStatus::Rejected, $fresh->getStatus());
         $this->assertNull($fresh->getInviteToken());
+    }
+
+    // --- Security path tests ---
+
+    public function test_accept_redirects_unauthenticated_user_to_login(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Kappa', $admin);
+        $member = $this->createVerifiedUser('kappa@example.com');
+        $this->createPendingMembership($team, $member, 'unauthed-token');
+
+        $this->client->request('GET', '/invite/unauthed-token/accept');
+
+        $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
+        $location = $this->client->getResponse()->headers->get('Location');
+        $this->assertStringContainsString('/login', $location);
+    }
+
+    public function test_accept_shows_invalid_when_wrong_user_is_logged_in(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Lambda', $admin);
+        $invitedUser = $this->createVerifiedUser('invited@example.com');
+        $wrongUser = $this->createVerifiedUser('wrong@example.com');
+        $this->createPendingMembership($team, $invitedUser, 'wrong-user-token');
+
+        $this->client->loginUser($wrongUser);
+        $this->client->request('GET', '/invite/wrong-user-token/accept');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'invalid');
+    }
+
+    public function test_setup_shows_expired_message_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Mu', $admin);
+        $invitedUser = $this->createPendingInvitedUser('expired@example.com');
+        $this->createExpiredMembership($team, $invitedUser, 'expired-token');
+
+        $this->client->request('GET', '/invite/expired-token');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    public function test_accept_post_shows_invalid_after_token_is_consumed(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Nu', $admin);
+        $member = $this->createVerifiedUser('nu@example.com');
+        $this->createPendingMembership($team, $member, 'replay-token');
+
+        $this->client->loginUser($member);
+        $crawler = $this->client->request('GET', '/invite/replay-token/accept');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        // First accept — should succeed
+        $this->client->request('POST', '/invite/replay-token/accept', ['_token' => $csrfToken]);
+        $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
+
+        // Replay — token already consumed
+        $this->client->request('GET', '/invite/replay-token/accept');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'invalid');
     }
 
     // --- pending membership with non-admin member should not grant team access ---

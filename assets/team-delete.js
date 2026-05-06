@@ -1,5 +1,6 @@
 import { apiFetch } from 'csrf';
 import { openModal, closeModal, isModalOpen } from 'modal';
+import { visit } from '@hotwired/turbo';
 
 let pendingTeamId = null;
 let pendingTeamName = null;
@@ -33,7 +34,7 @@ const deleteTeam = async () => {
         const response = await apiFetch(`/team/${pendingTeamId}`, { method: 'DELETE' });
 
         if (response.ok) {
-            window.location.href = '/team';
+            visit('/team');
         } else {
             errorEl().textContent = 'Something went wrong. Please try again.';
             errorEl().classList.remove('hidden');

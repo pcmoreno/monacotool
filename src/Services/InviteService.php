@@ -30,7 +30,7 @@ final class InviteService
     ) {
     }
 
-    public function invite(Team $team, string $name, string $email): void
+    public function invite(Team $team, string $name, string $email, User $inviter): void
     {
         $email = mb_strtolower($email);
 
@@ -58,6 +58,7 @@ final class InviteService
         $membership->setStatus(MembershipStatus::Pending);
         $membership->setInviteToken($hashedToken);
         $membership->setInviteExpiresAt(new \DateTimeImmutable(sprintf('+%d days', $this->inviteTokenExpiryDays)));
+        $membership->setInviterName($inviter->getName() ?? $inviter->getEmail());
 
         if ($isNewUser) {
             $this->userRepository->save($user);
@@ -66,9 +67,9 @@ final class InviteService
         $this->membershipRepository->flush();
 
         if ($isNewUser) {
-            $this->sendNewUserInviteEmail($user, $team, $plainToken);
+            $this->sendNewUserInviteEmail($user, $team, $plainToken, $inviter);
         } else {
-            $this->sendExistingUserInviteEmail($user, $team, $plainToken);
+            $this->sendExistingUserInviteEmail($user, $team, $plainToken, $inviter);
         }
     }
 
@@ -140,7 +141,7 @@ final class InviteService
         return null;
     }
 
-    private function sendNewUserInviteEmail(User $user, Team $team, string $plainToken): void
+    private function sendNewUserInviteEmail(User $user, Team $team, string $plainToken, User $inviter): void
     {
         $url = $this->urlGenerator->generate(
             'app_invite_setup',
@@ -154,11 +155,11 @@ final class InviteService
                 ->to($user->getEmail())
                 ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-new-user.html.twig')
-                ->context(['user' => $user, 'team' => $team, 'url' => $url]),
+                ->context(['user' => $user, 'team' => $team, 'url' => $url, 'inviterName' => $inviter->getName() ?? $inviter->getEmail()]),
         );
     }
 
-    private function sendExistingUserInviteEmail(User $user, Team $team, string $plainToken): void
+    private function sendExistingUserInviteEmail(User $user, Team $team, string $plainToken, User $inviter): void
     {
         $acceptUrl = $this->urlGenerator->generate(
             'app_invite_accept',
@@ -178,7 +179,7 @@ final class InviteService
                 ->to($user->getEmail())
                 ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-existing-user.html.twig')
-                ->context(['user' => $user, 'team' => $team, 'acceptUrl' => $acceptUrl, 'rejectUrl' => $rejectUrl]),
+                ->context(['user' => $user, 'team' => $team, 'acceptUrl' => $acceptUrl, 'rejectUrl' => $rejectUrl, 'inviterName' => $inviter->getName() ?? $inviter->getEmail()]),
         );
     }
 

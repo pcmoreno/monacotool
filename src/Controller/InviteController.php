@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Membership;
 use App\Entity\User;
 use App\Services\InviteService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +30,7 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $user = $membership->getUser();
@@ -42,6 +43,7 @@ final class InviteController extends AbstractController
             'token' => $token,
             'user' => $user,
             'team' => $membership->getTeam(),
+            'inviterName' => $membership->getInviterName(),
         ]);
     }
 
@@ -52,13 +54,13 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $user = $membership->getUser();
 
         if ($user->isVerified() || str_starts_with($user->getPassword() ?? '', '$')) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid(null);
         }
 
         $name = trim($request->request->getString('name'));
@@ -77,6 +79,7 @@ final class InviteController extends AbstractController
                 'token' => $token,
                 'user' => $user,
                 'team' => $membership->getTeam(),
+                'inviterName' => $membership->getInviterName(),
                 'errors' => $errors,
                 'name' => $name,
             ], new Response(null, Response::HTTP_UNPROCESSABLE_ENTITY));
@@ -105,7 +108,7 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $currentUser = $this->getUser();
@@ -117,12 +120,13 @@ final class InviteController extends AbstractController
         }
 
         if ($currentUser->getId() !== $membership->getUser()->getId()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid(null);
         }
 
         return $this->render('invite/accept.html.twig', [
             'token' => $token,
             'team' => $membership->getTeam(),
+            'inviterName' => $membership->getInviterName(),
         ]);
     }
 
@@ -133,13 +137,13 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $currentUser = $this->getUser();
 
         if (!$currentUser instanceof User || $currentUser->getId() !== $membership->getUser()->getId()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid(null);
         }
 
         $this->inviteService->accept($membership);
@@ -153,7 +157,7 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $currentUser = $this->getUser();
@@ -165,12 +169,13 @@ final class InviteController extends AbstractController
         }
 
         if ($currentUser->getId() !== $membership->getUser()->getId()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid(null);
         }
 
         return $this->render('invite/reject.html.twig', [
             'token' => $token,
             'team' => $membership->getTeam(),
+            'inviterName' => $membership->getInviterName(),
         ]);
     }
 
@@ -181,13 +186,13 @@ final class InviteController extends AbstractController
         $membership = $this->inviteService->findPendingByToken($token);
 
         if (!$membership || $membership->isInviteExpired()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid($membership);
         }
 
         $currentUser = $this->getUser();
 
         if (!$currentUser instanceof User || $currentUser->getId() !== $membership->getUser()->getId()) {
-            return $this->render('invite/invalid.html.twig');
+            return $this->renderInvalid(null);
         }
 
         $this->inviteService->reject($membership);
@@ -195,5 +200,12 @@ final class InviteController extends AbstractController
         return $this->render('invite/rejected.html.twig', [
             'team' => $membership->getTeam(),
         ]);
+    }
+
+    private function renderInvalid(?Membership $membership): Response
+    {
+        $reason = $membership !== null ? 'expired' : 'invalid';
+
+        return $this->render('invite/invalid.html.twig', ['reason' => $reason]);
     }
 }

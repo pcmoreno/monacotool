@@ -46,7 +46,7 @@ const submitForecast = async () => {
 };
 
 const deleteForecast = (forecastId, row) => {
-    showDeleteConfirm(async () => {
+    showDeleteConfirm('Delete this forecast? This action cannot be undone.', async () => {
         try {
             const response = await apiFetch(`/forecast/${forecastId}`, { method: 'DELETE' });
 
@@ -176,6 +176,10 @@ const openForecastDetail = async (forecast) => {
     resultEl.dataset.raw = resultVal;
     resultEl.textContent = (resultVal * 100).toFixed(1) + '%';
     resultEl.style.color = probabilityColor(resultVal);
+
+    const label = resultVal >= 0.7 ? 'Likely' : resultVal >= 0.4 ? 'Possible' : 'Unlikely';
+    const labelEl = document.getElementById('fd-result-label');
+    if (labelEl) labelEl.textContent = label;
 
     document.getElementById('fd-sensitivity-loading').classList.remove('hidden');
     document.getElementById('fd-sensitivity-table').classList.add('hidden');

@@ -12,7 +12,7 @@ class BasicForecaster implements ForecastInterface
 {
     public function __construct(
         private readonly TeamStatisticsService $teamStatisticsService,
-        private int $numberOfSimulations,
+        private readonly int $numberOfSimulations,
     ) {
         if ($numberOfSimulations < 1) {
             throw new \InvalidArgumentException('numberOfSimulations must be at least 1.');

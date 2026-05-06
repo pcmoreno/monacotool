@@ -14,7 +14,7 @@ final class Version20260503142249 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add team_stats_snapshot and sensitivity_table JSON columns to forecast';
     }
 
     public function up(Schema $schema): void

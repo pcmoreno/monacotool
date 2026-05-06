@@ -41,7 +41,7 @@ const submitTeamCreate = async () => {
 };
 
 function onClick(e) {
-    if (e.target.closest('#open-team-create-modal')) { openTeamCreate(); return; }
+    if (e.target.closest('[data-open-team-create]')) { openTeamCreate(); return; }
     if (e.target.closest('#close-team-create-modal')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-backdrop')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-submit')) { submitTeamCreate(); return; }

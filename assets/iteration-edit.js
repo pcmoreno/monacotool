@@ -154,8 +154,8 @@ const beginAddIteration = (trigger) => {
         committed = true;
         if (trigger.cells.length > 1) trigger.deleteCell(1);
         dateTd.colSpan = 3;
-        dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-lg font-light select-none';
-        dateTd.textContent = '+';
+        dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-sm font-medium select-none';
+        dateTd.textContent = '+ Add iteration';
     };
 
     const save = async () => {
@@ -206,7 +206,7 @@ const beginAddIteration = (trigger) => {
 };
 
 const deleteIteration = (iterationId, row) => {
-    showDeleteConfirm(async () => {
+    showDeleteConfirm('Delete this iteration? This action cannot be undone.', async () => {
         try {
             const response = await apiFetch(`/iteration/${iterationId}`, { method: 'DELETE' });
 

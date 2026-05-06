@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-class AlreadyMemberException extends \RuntimeException
+final class AlreadyMemberException extends \DomainException
 {
     public function __construct(string $message = 'This user is already a member of this team.')
     {
