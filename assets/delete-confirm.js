@@ -1,6 +1,12 @@
 export const icons = {
-    get trash() { return document.getElementById('icon-trash')?.innerHTML ?? ''; },
-    get magnifier() { return document.getElementById('icon-magnifier')?.innerHTML ?? ''; },
+    get trash() {
+        const tpl = document.getElementById('icon-trash');
+        return tpl ? tpl.content.cloneNode(true) : null;
+    },
+    get magnifier() {
+        const tpl = document.getElementById('icon-magnifier');
+        return tpl ? tpl.content.cloneNode(true) : null;
+    },
 };
 
 const callbackQueue = [];
@@ -10,7 +16,7 @@ const closeConfirm = () => {
     callbackQueue.length = 0;
 };
 
-document.addEventListener('click', async (e) => {
+async function onClick(e) {
     if (e.target.closest('#confirm-delete-cancel')) {
         closeConfirm();
         return;
@@ -20,6 +26,15 @@ document.addEventListener('click', async (e) => {
         if (cb) await cb();
         document.getElementById('confirm-delete-modal')?.classList.add('hidden');
     }
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.addEventListener('click', onClick);
+});
+
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
 });
 
 export const showDeleteConfirm = (callback) => {

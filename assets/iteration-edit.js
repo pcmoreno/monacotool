@@ -28,7 +28,8 @@ const makeEditableRow = (id, endDate, output, tbody) => {
     deleteBtn.type = 'button';
     deleteBtn.dataset.deleteIteration = id;
     deleteBtn.className = 'text-graphite-400 hover:text-red-500 transition';
-    deleteBtn.innerHTML = icons.trash;
+    const trashIcon = icons.trash;
+    if (trashIcon) deleteBtn.appendChild(trashIcon);
 
     const deleteTd = document.createElement('td');
     deleteTd.className = 'py-2.5 px-1';
@@ -105,7 +106,8 @@ const beginEdit = (cell) => {
                 cell.textContent = originalText;
                 showToast(await errorMessageFromResponse(response, 'Could not update iteration.'));
             }
-        } catch {
+        } catch (e) {
+            if (!(e instanceof TypeError)) throw e;
             cell.textContent = originalText;
             showToast('Network error. Please try again.');
         }
@@ -221,7 +223,7 @@ const deleteIteration = (iterationId, row) => {
     });
 };
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     const editable = e.target.closest('[data-editable]');
     if (editable) { beginEdit(editable); return; }
 
@@ -233,4 +235,13 @@ document.addEventListener('click', (e) => {
 
     const trigger = e.target.closest('#add-iteration-trigger');
     if (trigger) beginAddIteration(trigger);
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.addEventListener('click', onClick);
+});
+
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
 });

@@ -1,28 +1,22 @@
 import { apiFetch } from 'csrf';
+import { openModal, closeModal, isModalOpen } from 'modal';
 
 let pendingEmail = '';
 
 const closeRegister = () => {
-    const modal = document.getElementById('register-modal');
-    if (!modal) return;
-    modal.classList.add('hidden');
-
+    closeModal('register-modal');
     const errors = document.getElementById('register-errors');
     if (errors) {
         errors.classList.add('hidden');
         errors.replaceChildren();
     }
-
     ['register-name', 'register-email', 'register-password', 'register-confirm'].forEach(id => {
         const i = document.getElementById(id);
         if (i) i.value = '';
     });
 };
 
-const openRegister = () => {
-    document.getElementById('register-modal').classList.remove('hidden');
-    document.getElementById('register-name').focus();
-};
+const openRegister = () => openModal('register-modal', 'register-name');
 
 const openCheckInbox = (email) => {
     pendingEmail = email;
@@ -32,12 +26,10 @@ const openCheckInbox = (email) => {
         feedback.classList.add('hidden');
         feedback.textContent = '';
     }
-    document.getElementById('check-inbox-modal').classList.remove('hidden');
+    openModal('check-inbox-modal');
 };
 
-const closeCheckInbox = () => {
-    document.getElementById('check-inbox-modal').classList.add('hidden');
-};
+const closeCheckInbox = () => closeModal('check-inbox-modal');
 
 const showErrors = (errors) => {
     const container = document.getElementById('register-errors');
@@ -79,7 +71,8 @@ const submitRegister = async () => {
                 ?? ['Something went wrong. Please try again.'];
             showErrors(errors);
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         showErrors(['Something went wrong. Please try again.']);
     } finally {
         btn.disabled = false;
@@ -102,7 +95,8 @@ const resendVerification = async () => {
 
         feedback.textContent = 'A new link has been sent.';
         feedback.classList.remove('hidden');
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         feedback.textContent = 'Something went wrong. Please try again.';
         feedback.classList.remove('hidden');
     } finally {
@@ -110,16 +104,26 @@ const resendVerification = async () => {
     }
 };
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     if (e.target.closest('#open-register-modal')) { openRegister(); return; }
     if (e.target.closest('#close-register-modal')) { closeRegister(); return; }
     if (e.target.closest('#register-submit')) { submitRegister(); return; }
     if (e.target.closest('#close-check-inbox-modal')) { closeCheckInbox(); return; }
     if (e.target.closest('#resend-verification-btn')) { resendVerification(); return; }
+}
+
+function onKeydown(e) {
+    if (e.key === 'Escape' && isModalOpen('check-inbox-modal')) closeCheckInbox();
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
 });
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !document.getElementById('check-inbox-modal')?.classList.contains('hidden')) {
-        closeCheckInbox();
-    }
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
 });

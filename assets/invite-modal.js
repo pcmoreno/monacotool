@@ -1,18 +1,16 @@
 import { apiFetch } from 'csrf';
 import { errorMessageFromResponse } from 'toast';
-
-const openInvite = () => {
-    document.getElementById('invite-modal').classList.remove('hidden');
-    document.getElementById('invite-name').focus();
-};
+import { openModal, closeModal, isModalOpen } from 'modal';
 
 const closeInvite = () => {
-    document.getElementById('invite-modal').classList.add('hidden');
+    closeModal('invite-modal');
     document.getElementById('invite-name').value = '';
     document.getElementById('invite-email').value = '';
     document.getElementById('invite-error').classList.add('hidden');
     document.getElementById('invite-error').textContent = '';
 };
+
+const openInvite = () => openModal('invite-modal', 'invite-name');
 
 const submitInvite = async () => {
     const btn = document.getElementById('invite-submit');
@@ -45,7 +43,8 @@ const submitInvite = async () => {
         } else {
             showError(await errorMessageFromResponse(response, 'Could not send invitation.'));
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         showError('Network error. Please try again.');
     } finally {
         btn.disabled = false;
@@ -80,15 +79,25 @@ const addPendingMember = (name, email) => {
     ul.appendChild(li);
 };
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     if (e.target.closest('#open-invite-modal')) { openInvite(); return; }
     if (e.target.closest('#close-invite-modal')) { closeInvite(); return; }
     if (e.target.closest('#invite-backdrop')) { closeInvite(); return; }
     if (e.target.closest('#invite-submit')) { submitInvite(); return; }
+}
+
+function onKeydown(e) {
+    if (e.key === 'Escape' && isModalOpen('invite-modal')) closeInvite();
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
 });
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !document.getElementById('invite-modal')?.classList.contains('hidden')) {
-        closeInvite();
-    }
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
 });

@@ -40,12 +40,12 @@
 
 {% set welcome_name = app.flashes('welcome')|first %}
 {% if welcome_name %}
-<div id="welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center">
+<div id="welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-heading">
     <div class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4 text-center">
         <button id="close-welcome-modal" type="button"
                 class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
-        <h2 class="text-2xl font-bold text-graphite-900 mb-2">Welcome, {{ welcome_name }}!</h2>
+        <h2 id="welcome-modal-heading" class="text-2xl font-bold text-graphite-900 mb-2">Welcome, {{ welcome_name }}!</h2>
         <p class="text-sm text-graphite-500 mb-6">Your account is verified. Create your first team to start forecasting.</p>
         <div class="flex flex-col gap-3">
             <button id="welcome-create-team" type="button"
@@ -61,12 +61,12 @@
 </div>
 {% endif %}
 
-<div id="team-create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+<div id="team-create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="team-create-heading" aria-hidden="true">
     <div id="team-create-backdrop" class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
         <button id="close-team-create-modal" type="button"
                 class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
-        <h2 class="text-xl font-bold text-graphite-900 mb-6">Create a new team</h2>
+        <h2 id="team-create-heading" class="text-xl font-bold text-graphite-900 mb-6">Create a new team</h2>
         <div class="space-y-4">
             <div>
                 <label for="team-create-name" class="block text-sm font-medium text-graphite-700 mb-1">Team name</label>
