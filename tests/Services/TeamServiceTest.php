@@ -18,7 +18,7 @@ class TeamServiceTest extends AbstractServiceTest
     protected function setUp(): void
     {
         $this->teamRepository = $this->createMock(TeamRepository::class);
-        $this->service = new TeamService($this->teamRepository);
+        $this->service = new TeamService($this->teamRepository, 5);
     }
 
     // --- create ---

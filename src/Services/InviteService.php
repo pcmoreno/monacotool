@@ -90,13 +90,7 @@ final class InviteService
 
     public function findPendingByToken(string $plainToken): ?Membership
     {
-        $membership = $this->membershipRepository->findByInviteToken(hash('sha256', $plainToken));
-
-        if (!$membership || $membership->getStatus() !== MembershipStatus::Pending) {
-            return null;
-        }
-
-        return $membership;
+        return $this->membershipRepository->findPendingByInviteToken(hash('sha256', $plainToken));
     }
 
     public function accept(Membership $membership): void
@@ -119,17 +113,17 @@ final class InviteService
 
     private function guardNotAlreadyPendingOrActiveMember(Team $team, string $email): void
     {
-        foreach ($team->getMemberships() as $membership) {
-            if ($membership->getUser()->getEmail() !== $email) {
-                continue;
-            }
+        $existing = $this->membershipRepository->findActiveOrPendingByTeamAndEmail($team, $email);
 
-            match ($membership->getStatus()) {
-                MembershipStatus::Active => throw new AlreadyMemberException('This user is already a member of this team.'),
-                MembershipStatus::Pending => throw new AlreadyMemberException('This user has already been invited.'),
-                default => null,
-            };
+        if ($existing === null) {
+            return;
         }
+
+        match ($existing->getStatus()) {
+            MembershipStatus::Active => throw new AlreadyMemberException('This user is already a member of this team.'),
+            MembershipStatus::Pending => throw new AlreadyMemberException('This user has already been invited.'),
+            default => null,
+        };
     }
 
     private function findRejectedMembership(Team $team, string $email): ?Membership

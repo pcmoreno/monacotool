@@ -13,8 +13,10 @@ use App\Repository\TeamRepository;
 
 class TeamService
 {
-    public function __construct(private readonly TeamRepository $teamRepository)
-    {
+    public function __construct(
+        private readonly TeamRepository $teamRepository,
+        private readonly int $maxAdminTeams,
+    ) {
     }
 
     public function create(string $name, User $creator): Team
@@ -23,7 +25,7 @@ class TeamService
         $team->setName($name);
 
         if (!$creator->isSuperAdmin()) {
-            if ($this->teamRepository->countAdminTeamsByUser($creator) >= 5) {
+            if ($this->teamRepository->countAdminTeamsByUser($creator) >= $this->maxAdminTeams) {
                 throw new TooManyTeamsException();
             }
 

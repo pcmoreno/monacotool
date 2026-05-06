@@ -37,7 +37,8 @@ class Forecast
     private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'forecasts')]
-    private ?Team $team = null;
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Team $team;
 
     public function __construct()
     {
@@ -126,12 +127,12 @@ class Forecast
         return $this;
     }
 
-    public function getTeam(): ?Team
+    public function getTeam(): Team
     {
         return $this->team;
     }
 
-    public function setTeam(?Team $team): self
+    public function setTeam(Team $team): self
     {
         $this->team = $team;
 

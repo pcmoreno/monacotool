@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Enum\MembershipStatus;
 use App\Enum\TeamRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -42,8 +43,10 @@ class TeamRepository extends ServiceEntityRepository
             ->join('t.memberships', 'm')
             ->where('m.user = :user')
             ->andWhere('m.role = :role')
+            ->andWhere('m.status = :status')
             ->setParameter('user', $user)
             ->setParameter('role', TeamRole::Admin)
+            ->setParameter('status', MembershipStatus::Active)
             ->getQuery()
             ->getSingleScalarResult();
     }

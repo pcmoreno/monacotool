@@ -157,7 +157,7 @@ class TeamControllerTest extends AbstractControllerTest
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
 
-    public function test_invite_returns_422_if_already_active_member(): void
+    public function test_invite_returns_204_if_already_active_member(): void
     {
         $admin = $this->createVerifiedUser('admin@example.com');
         $member = $this->createVerifiedUser('member@example.com');
@@ -170,10 +170,10 @@ class TeamControllerTest extends AbstractControllerTest
             'email' => 'member@example.com',
         ]);
 
-        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
 
-    public function test_invite_returns_422_if_already_pending(): void
+    public function test_invite_returns_204_if_already_pending(): void
     {
         $admin = $this->createVerifiedUser('admin@example.com');
         $team = $this->createTeamWithAdmin('Mu', $admin);
@@ -186,6 +186,6 @@ class TeamControllerTest extends AbstractControllerTest
             'email' => 'pending@example.com',
         ]);
 
-        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
 }

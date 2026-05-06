@@ -10,6 +10,7 @@ parameters:
     number_of_simulations: '%env(NUMBER_OF_SIMULATIONS)%'
     mailer_from: '%env(MAILER_FROM)%'
     invite_token_expiry_days: '%env(int:INVITE_TOKEN_EXPIRY_DAYS)%'
+    max_admin_teams: 5
 
 services:
     # default configuration for services in *this* file
@@ -30,6 +31,10 @@ services:
         arguments:
             $mailerFrom: '%mailer_from%'
             $inviteTokenExpiryDays: '%invite_token_expiry_days%'
+
+    App\Services\TeamService:
+        arguments:
+            $maxAdminTeams: '%max_admin_teams%'
 
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator: '@security.authenticator.form_login.main'
 

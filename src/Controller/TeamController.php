@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Exception\AlreadyMemberException;
 use App\Exception\TooManyTeamsException;
 use App\Request\ForecastRequest;
 use App\Request\InviteRequest;
