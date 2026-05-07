@@ -246,16 +246,27 @@ function onKeydown(e) {
     }
 }
 
+function onIterationChanged({ detail }) {
+    const btn = document.getElementById('open-forecast-modal');
+    if (!btn) return;
+    const enough = detail.count >= 2;
+    btn.disabled = !enough;
+    btn.title = enough ? '' : 'At least 2 iterations are required to run a forecast.';
+}
+
 document.addEventListener('turbo:load', () => {
     document.removeEventListener('click', onClick);
     document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('iteration:changed', onIterationChanged);
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', onKeydown);
+    document.addEventListener('iteration:changed', onIterationChanged);
 });
 
 document.addEventListener('turbo:before-cache', () => {
     document.removeEventListener('click', onClick);
     document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('iteration:changed', onIterationChanged);
 });
 
 const addForecastRow = (forecast) => {

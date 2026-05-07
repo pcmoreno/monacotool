@@ -181,6 +181,8 @@ const beginAddIteration = (trigger) => {
                 makeEditableRow(data.id, data.endDate, data.output, tbody);
                 sortTableByDate(tbody);
                 updateStats(data);
+                const count = tbody.querySelectorAll('tr[data-iteration-id]').length;
+                document.dispatchEvent(new CustomEvent('iteration:changed', { detail: { count } }));
             } else {
                 resetTrigger();
                 showToast(await errorMessageFromResponse(response, 'Could not add iteration.'));
@@ -211,9 +213,12 @@ const deleteIteration = (iterationId, row) => {
             const response = await apiFetch(`/iteration/${iterationId}`, { method: 'DELETE' });
 
             if (response.ok) {
+                const tbody = row.closest('tbody');
                 row.remove();
                 const data = await response.json();
                 updateStats(data);
+                const count = tbody.querySelectorAll('tr[data-iteration-id]').length;
+                document.dispatchEvent(new CustomEvent('iteration:changed', { detail: { count } }));
             } else {
                 showToast(await errorMessageFromResponse(response, 'Could not delete iteration.'));
             }

@@ -90,7 +90,7 @@
                         </thead>
                         <tbody class="divide-y divide-graphite-100">
                             {% for iteration in team.iterations %}
-                                <tr>
+                                <tr data-iteration-id="{{ iteration.id }}">
                                     <td class="py-2.5 px-1">
                                         <button type="button" data-delete-iteration="{{ iteration.id }}" class="text-graphite-400 hover:text-red-500 transition">
                                             {% include 'icons/trash.html.twig' %}
