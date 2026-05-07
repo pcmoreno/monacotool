@@ -50,7 +50,7 @@ class InviteControllerTest extends AbstractControllerTest
 
     // --- POST /invite/{token} ---
 
-    public function test_finish_returns_422_on_validation_error(): void
+    public function test_finish_returns_422_on_short_password(): void
     {
         $admin = $this->createVerifiedUser('admin@example.com');
         $team = $this->createTeamWithAdmin('Gamma', $admin);
@@ -299,6 +299,137 @@ class InviteControllerTest extends AbstractControllerTest
 
         $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
         $this->assertStringContainsString('/login', $this->client->getResponse()->headers->get('Location'));
+    }
+
+    public function test_finish_returns_422_on_short_name(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Sigma', $admin);
+        $invitedUser = $this->createPendingInvitedUser('sigma@example.com');
+        $this->createPendingMembership($team, $invitedUser, 'short-name-token');
+
+        $crawler = $this->client->request('GET', '/invite/short-name-token');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/short-name-token', [
+            'name' => 'A',
+            'password' => 'validpassword123',
+            '_token' => $csrfToken,
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $this->client->getResponse()->getStatusCode());
+    }
+
+    // --- Expired token tests ---
+
+    public function test_finish_returns_invalid_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Tau', $admin);
+        $validUser = $this->createPendingInvitedUser('tau-valid@example.com');
+        $this->createPendingMembership($team, $validUser, 'tau-valid-token');
+        $expiredUser = $this->createPendingInvitedUser('tau-expired@example.com');
+        $this->createExpiredMembership($team, $expiredUser, 'tau-expired-token');
+
+        $crawler = $this->client->request('GET', '/invite/tau-valid-token');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/tau-expired-token', [
+            'name' => 'Test User',
+            'password' => 'validpass123',
+            '_token' => $csrfToken,
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    public function test_accept_returns_invalid_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Upsilon', $admin);
+        $member = $this->createVerifiedUser('upsilon@example.com');
+        $this->createExpiredMembership($team, $member, 'upsilon-expired-token');
+
+        $this->client->request('GET', '/invite/upsilon-expired-token/accept');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    public function test_accept_post_returns_invalid_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Phi', $admin);
+        $validMember = $this->createVerifiedUser('phi-valid@example.com');
+        $this->createPendingMembership($team, $validMember, 'phi-valid-token');
+        $expiredMember = $this->createVerifiedUser('phi-expired@example.com');
+        $this->createExpiredMembership($team, $expiredMember, 'phi-expired-token');
+
+        $this->client->loginUser($validMember);
+        $crawler = $this->client->request('GET', '/invite/phi-valid-token/accept');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/phi-expired-token/accept', ['_token' => $csrfToken]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    public function test_reject_returns_invalid_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Chi', $admin);
+        $member = $this->createVerifiedUser('chi@example.com');
+        $this->createExpiredMembership($team, $member, 'chi-expired-token');
+
+        $this->client->request('GET', '/invite/chi-expired-token/reject');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    public function test_reject_post_returns_invalid_for_expired_token(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Psi', $admin);
+        $validMember = $this->createVerifiedUser('psi-valid@example.com');
+        $this->createPendingMembership($team, $validMember, 'psi-valid-token');
+        $expiredMember = $this->createVerifiedUser('psi-expired@example.com');
+        $this->createExpiredMembership($team, $expiredMember, 'psi-expired-token');
+
+        $this->client->loginUser($validMember);
+        $crawler = $this->client->request('GET', '/invite/psi-valid-token/reject');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/psi-expired-token/reject', ['_token' => $csrfToken]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'expired');
+    }
+
+    // --- finish() with verified user ---
+
+    public function test_finish_returns_invalid_for_verified_user(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Omega', $admin);
+        $verifiedMember = $this->createVerifiedUser('omega-verified@example.com');
+        $this->createPendingMembership($team, $verifiedMember, 'omega-verified-token');
+        $unverifiedUser = $this->createPendingInvitedUser('omega-unverified@example.com');
+        $this->createPendingMembership($team, $unverifiedUser, 'omega-setup-token');
+
+        $crawler = $this->client->request('GET', '/invite/omega-setup-token');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->request('POST', '/invite/omega-verified-token', [
+            'name' => 'Verified User',
+            'password' => 'validpass123',
+            '_token' => $csrfToken,
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'invalid');
     }
 
     // --- pending membership with non-admin member should not grant team access ---

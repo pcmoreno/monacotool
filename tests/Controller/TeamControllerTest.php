@@ -223,4 +223,20 @@ class TeamControllerTest extends AbstractControllerTest
         $this->assertCount(1, $memberships);
         $this->assertSame(\App\Enum\MembershipStatus::Pending, $memberships[0]->getStatus());
     }
+
+    public function test_invite_returns_422_for_case_insensitive_duplicate(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $member = $this->createVerifiedUser('member@example.com');
+        $team = $this->createTeamWithAdmin('Pi', $admin);
+        $this->addMember($team, $member, TeamRole::User);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Member',
+            'email' => 'MEMBER@EXAMPLE.COM',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
 }
