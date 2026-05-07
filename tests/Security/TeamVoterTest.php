@@ -7,6 +7,7 @@ namespace App\Tests\Security;
 use App\Entity\Membership;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Enum\MembershipStatus;
 use App\Enum\TeamRole;
 use App\Security\TeamVoter;
 use PHPUnit\Framework\TestCase;
@@ -97,6 +98,75 @@ class TeamVoterTest extends TestCase
         $this->assertVote(VoterInterface::ACCESS_GRANTED, $user, $team, TeamVoter::EDIT);
     }
 
+    public function test_pending_member_cannot_view(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::User, MembershipStatus::Pending);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::VIEW);
+    }
+
+    public function test_rejected_member_cannot_view(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Rejected);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::VIEW);
+    }
+
+    public function test_rejected_admin_cannot_edit(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Rejected);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::EDIT);
+    }
+
+    public function test_rejected_admin_cannot_delete(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Rejected);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::DELETE);
+    }
+
+    public function test_pending_admin_cannot_edit(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Pending);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::EDIT);
+    }
+
+    public function test_pending_admin_cannot_delete(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Pending);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::DELETE);
+    }
+
+    public function test_admin_member_can_delete(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMember($user, TeamRole::Admin);
+
+        $this->assertVote(VoterInterface::ACCESS_GRANTED, $user, $team, TeamVoter::DELETE);
+    }
+
+    public function test_user_member_cannot_delete(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMember($user, TeamRole::User);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::DELETE);
+    }
+
+    public function test_super_admin_can_delete_any_team(): void
+    {
+        $this->assertVote(VoterInterface::ACCESS_GRANTED, $this->superAdmin(), new Team(), TeamVoter::DELETE);
+    }
+
     private function assertVote(int $expected, User|\stdClass $user, object $subject, string $attribute): void
     {
         $token = $this->createMock(TokenInterface::class);
@@ -123,9 +193,15 @@ class TeamVoterTest extends TestCase
 
     private function teamWithMember(User $user, TeamRole $role): Team
     {
+        return $this->teamWithMemberStatus($user, $role, MembershipStatus::Active);
+    }
+
+    private function teamWithMemberStatus(User $user, TeamRole $role, MembershipStatus $status): Team
+    {
         $membership = new Membership();
         $membership->setUser($user);
         $membership->setRole($role);
+        $membership->setStatus($status);
 
         $team = new Team();
         $team->addMembership($membership);

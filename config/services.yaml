@@ -9,6 +9,8 @@
 parameters:
     number_of_simulations: '%env(NUMBER_OF_SIMULATIONS)%'
     mailer_from: '%env(MAILER_FROM)%'
+    invite_token_expiry_days: '%env(int:INVITE_TOKEN_EXPIRY_DAYS)%'
+    max_admin_teams: 5
 
 services:
     # default configuration for services in *this* file
@@ -24,6 +26,18 @@ services:
     App\Services\AccountService:
         arguments:
             $mailerFrom: '%mailer_from%'
+
+    App\Services\InviteService:
+        arguments:
+            $mailerFrom: '%mailer_from%'
+            $inviteTokenExpiryDays: '%invite_token_expiry_days%'
+
+    App\Services\TeamService:
+        arguments:
+            $maxAdminTeams: '%max_admin_teams%'
+
+    # NOTE: 'main' encodes the firewall name — if the firewall is renamed, this alias breaks silently at runtime.
+    Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator: '@security.authenticator.form_login.main'
 
     App\Services\Forecaster\BasicForecaster:
         arguments:

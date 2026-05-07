@@ -30,7 +30,7 @@ class TeamTest extends TestCase
         $this->assertCount(1, $team->getIterations());
     }
 
-    public function test_remove_iteration_unlinks_team(): void
+    public function test_remove_iteration_removes_from_collection(): void
     {
         $team = new Team();
         $iteration = new Iteration();
@@ -38,6 +38,5 @@ class TeamTest extends TestCase
         $team->removeIteration($iteration);
 
         $this->assertCount(0, $team->getIterations());
-        $this->assertNull($iteration->getTeam());
     }
 }

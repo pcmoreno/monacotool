@@ -7,6 +7,12 @@
     <div class="w-full max-w-sm">
         <h1 class="text-2xl font-bold text-center text-graphite-900 mb-8">MonacoTool</h1>
 
+        {% for message in app.flashes('success') %}
+            <div class="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700 ring-1 ring-green-200">
+                {{ message }}
+            </div>
+        {% endfor %}
+
         {% if error %}
             <div class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
                 {{ error.messageKey | trans(error.messageData, 'security') }}
@@ -44,18 +50,18 @@
         </div>
 
         <p class="mt-6 text-center text-sm text-graphite-500">
-            <a href="{{ path('home') }}" class="text-primary-600 hover:underline">Back to home</a>
+            New here? <a href="{{ path('home') }}" class="text-primary-600 hover:underline">Create an account</a>
         </p>
     </div>
 </div>
 
 {# Forgot password modal #}
-<div id="forgot-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+<div id="forgot-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="forgot-password-heading" aria-hidden="true">
     <div id="forgot-backdrop" class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
         <button id="close-forgot-modal" type="button"
                 class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
-        <h2 class="text-xl font-bold text-graphite-900 mb-2">Forgot password?</h2>
+        <h2 id="forgot-password-heading" class="text-xl font-bold text-graphite-900 mb-2">Forgot password?</h2>
         <p class="text-sm text-graphite-500 mb-5">Enter your email and we'll send you a reset link.</p>
         <div class="space-y-4">
             <div>
@@ -74,12 +80,12 @@
 
 {# Resend verification modal (shown when account not verified) #}
 {% if is_not_verified %}
-<div id="resend-verification-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+<div id="resend-verification-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="resend-verification-heading" aria-hidden="true">
     <div id="resend-backdrop" class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
         <button id="close-resend-modal" type="button"
                 class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
-        <h2 class="text-xl font-bold text-graphite-900 mb-2">Resend verification email</h2>
+        <h2 id="resend-verification-heading" class="text-xl font-bold text-graphite-900 mb-2">Resend verification email</h2>
         <p class="text-sm text-graphite-500 mb-5">Enter your email and we'll send you a new confirmation link.</p>
         <div class="space-y-4">
             <div>
@@ -98,10 +104,10 @@
 {% endif %}
 
 {# Reset password modal — opened by JS when ?reset-token= is in the URL #}
-<div id="reset-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+<div id="reset-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="reset-password-heading" aria-hidden="true">
     <div class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
-        <h2 class="text-xl font-bold text-graphite-900 mb-6">Set a new password</h2>
+        <h2 id="reset-password-heading" class="text-xl font-bold text-graphite-900 mb-6">Set a new password</h2>
         <input type="hidden" id="reset-token">
 
         <div id="reset-errors" class="hidden mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 space-y-1"></div>
@@ -123,6 +129,10 @@
             </button>
         </div>
         <div id="reset-success" class="hidden mt-4 text-sm text-graphite-500 text-center"></div>
+        <a id="reset-login-link" href="{{ path('app_login') }}"
+           class="hidden mt-4 w-full block text-center rounded-md bg-surface px-5 py-2 text-sm font-semibold text-graphite-700 shadow ring-1 ring-graphite-300 hover:bg-graphite-50 transition">
+            Return to login
+        </a>
     </div>
 </div>
 

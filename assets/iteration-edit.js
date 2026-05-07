@@ -28,7 +28,8 @@ const makeEditableRow = (id, endDate, output, tbody) => {
     deleteBtn.type = 'button';
     deleteBtn.dataset.deleteIteration = id;
     deleteBtn.className = 'text-graphite-400 hover:text-red-500 transition';
-    deleteBtn.innerHTML = icons.trash;
+    const trashIcon = icons.trash;
+    if (trashIcon) deleteBtn.appendChild(trashIcon);
 
     const deleteTd = document.createElement('td');
     deleteTd.className = 'py-2.5 px-1';
@@ -105,7 +106,8 @@ const beginEdit = (cell) => {
                 cell.textContent = originalText;
                 showToast(await errorMessageFromResponse(response, 'Could not update iteration.'));
             }
-        } catch {
+        } catch (e) {
+            if (!(e instanceof TypeError)) throw e;
             cell.textContent = originalText;
             showToast('Network error. Please try again.');
         }
@@ -152,8 +154,8 @@ const beginAddIteration = (trigger) => {
         committed = true;
         if (trigger.cells.length > 1) trigger.deleteCell(1);
         dateTd.colSpan = 3;
-        dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-lg font-light select-none';
-        dateTd.textContent = '+';
+        dateTd.className = 'py-2.5 px-1 text-center text-primary-400 hover:text-primary-600 text-sm font-medium select-none';
+        dateTd.textContent = '+ Add iteration';
     };
 
     const save = async () => {
@@ -179,6 +181,8 @@ const beginAddIteration = (trigger) => {
                 makeEditableRow(data.id, data.endDate, data.output, tbody);
                 sortTableByDate(tbody);
                 updateStats(data);
+                const count = tbody.querySelectorAll('tr[data-iteration-id]').length;
+                document.dispatchEvent(new CustomEvent('iteration:changed', { detail: { count } }));
             } else {
                 resetTrigger();
                 showToast(await errorMessageFromResponse(response, 'Could not add iteration.'));
@@ -204,14 +208,17 @@ const beginAddIteration = (trigger) => {
 };
 
 const deleteIteration = (iterationId, row) => {
-    showDeleteConfirm(async () => {
+    showDeleteConfirm('Delete this iteration? This action cannot be undone.', async () => {
         try {
             const response = await apiFetch(`/iteration/${iterationId}`, { method: 'DELETE' });
 
             if (response.ok) {
+                const tbody = row.closest('tbody');
                 row.remove();
                 const data = await response.json();
                 updateStats(data);
+                const count = tbody.querySelectorAll('tr[data-iteration-id]').length;
+                document.dispatchEvent(new CustomEvent('iteration:changed', { detail: { count } }));
             } else {
                 showToast(await errorMessageFromResponse(response, 'Could not delete iteration.'));
             }
@@ -221,7 +228,7 @@ const deleteIteration = (iterationId, row) => {
     });
 };
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     const editable = e.target.closest('[data-editable]');
     if (editable) { beginEdit(editable); return; }
 
@@ -233,4 +240,13 @@ document.addEventListener('click', (e) => {
 
     const trigger = e.target.closest('#add-iteration-trigger');
     if (trigger) beginAddIteration(trigger);
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.addEventListener('click', onClick);
+});
+
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
 });

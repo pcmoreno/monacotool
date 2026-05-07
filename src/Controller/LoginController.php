@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Security\EmailNotVerifiedException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
-class LoginController extends AbstractController
+final class LoginController extends AbstractController
 {
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response

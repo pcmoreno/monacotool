@@ -6,6 +6,7 @@ namespace App\Security;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Enum\MembershipStatus;
 use App\Enum\TeamRole;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -35,7 +36,7 @@ final class TeamVoter extends Voter
         }
 
         foreach ($subject->getMemberships() as $membership) {
-            if ($membership->getUser() !== $user) {
+            if ($membership->getUser() !== $user || $membership->getStatus() !== MembershipStatus::Active) {
                 continue;
             }
 

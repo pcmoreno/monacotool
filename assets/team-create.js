@@ -1,15 +1,11 @@
 import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
+import { openModal, closeModal, isModalOpen } from 'modal';
 
-const openTeamCreate = () => {
-    document.getElementById('team-create-modal').classList.remove('hidden');
-    document.getElementById('team-create-name').focus();
-};
+const openTeamCreate = () => openModal('team-create-modal', 'team-create-name');
 
 const closeTeamCreate = () => {
-    const modal = document.getElementById('team-create-modal');
-    if (!modal) return;
-    modal.classList.add('hidden');
+    closeModal('team-create-modal');
     const input = document.getElementById('team-create-name');
     if (input) input.value = '';
 };
@@ -36,15 +32,16 @@ const submitTeamCreate = async () => {
         } else {
             showToast(await errorMessageFromResponse(response, 'Could not create team.'));
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         showToast('Network error. Please try again.');
     } finally {
         btn.disabled = false;
     }
 };
 
-document.addEventListener('click', (e) => {
-    if (e.target.closest('#open-team-create-modal')) { openTeamCreate(); return; }
+function onClick(e) {
+    if (e.target.closest('[data-open-team-create]')) { openTeamCreate(); return; }
     if (e.target.closest('#close-team-create-modal')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-backdrop')) { closeTeamCreate(); return; }
     if (e.target.closest('#team-create-submit')) { submitTeamCreate(); return; }
@@ -58,17 +55,26 @@ document.addEventListener('click', (e) => {
         openTeamCreate();
         return;
     }
-});
+}
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !document.getElementById('team-create-modal')?.classList.contains('hidden')) {
-        closeTeamCreate();
-        return;
-    }
+function onKeydown(e) {
+    if (e.key === 'Escape' && isModalOpen('team-create-modal')) { closeTeamCreate(); return; }
     if (e.key === 'Enter' && e.target.id === 'team-create-name') {
         e.preventDefault();
         submitTeamCreate();
     }
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
+});
+
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
 });
 
 const addTeamCard = (team) => {

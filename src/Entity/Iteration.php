@@ -23,7 +23,8 @@ class Iteration
     private int $output;
 
     #[ORM\ManyToOne(inversedBy: 'iterations')]
-    private ?Team $team = null;
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Team $team;
 
     public function getId(): ?int
     {
@@ -54,12 +55,12 @@ class Iteration
         return $this;
     }
 
-    public function getTeam(): ?Team
+    public function getTeam(): Team
     {
         return $this->team;
     }
 
-    public function setTeam(?Team $team): self
+    public function setTeam(Team $team): self
     {
         $this->team = $team;
 

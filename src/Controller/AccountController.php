@@ -11,7 +11,6 @@ use App\Request\ResendVerificationRequest;
 use App\Request\ResetPasswordRequest;
 use App\Services\AccountService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +24,6 @@ final class AccountController extends AbstractController
 {
     public function __construct(
         private readonly AccountService $accountService,
-        private readonly Security $security,
         private readonly RateLimiterFactory $registerLimiter,
         private readonly RateLimiterFactory $resendVerificationLimiter,
         private readonly RateLimiterFactory $forgotPasswordLimiter,
@@ -79,10 +77,9 @@ final class AccountController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $this->security->login($user, 'form_login', 'main');
-        $this->addFlash('welcome', $user->getName() ?? $user->getEmail());
+        $this->addFlash('success', 'Your email has been verified. You can now log in.');
 
-        return $this->redirectToRoute('app_team');
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['POST'])]

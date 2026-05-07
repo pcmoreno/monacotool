@@ -14,7 +14,7 @@ final class Version20260123100119 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Create initial forecast, iteration, and team tables';
     }
 
     public function up(Schema $schema): void

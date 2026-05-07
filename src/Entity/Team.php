@@ -23,14 +23,14 @@ class Team
     /**
      * @var Collection<int, Iteration>
      */
-    #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team', cascade: ['remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['endDate' => 'ASC'])]
     private Collection $iterations;
 
     /**
      * @var Collection<int, Forecast>
      */
-    #[ORM\OneToMany(targetEntity: Forecast::class, mappedBy: 'team', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Forecast::class, mappedBy: 'team', cascade: ['remove'], orphanRemoval: true)]
     private Collection $forecasts;
 
     /**
@@ -83,12 +83,7 @@ class Team
 
     public function removeIteration(Iteration $iteration): self
     {
-        if ($this->iterations->removeElement($iteration)) {
-            // set the owning side to null (unless already changed)
-            if ($iteration->getTeam() === $this) {
-                $iteration->setTeam(null);
-            }
-        }
+        $this->iterations->removeElement($iteration);
 
         return $this;
     }
@@ -113,12 +108,7 @@ class Team
 
     public function removeForecast(Forecast $forecast): self
     {
-        if ($this->forecasts->removeElement($forecast)) {
-            // set the owning side to null (unless already changed)
-            if ($forecast->getTeam() === $this) {
-                $forecast->setTeam(null);
-            }
-        }
+        $this->forecasts->removeElement($forecast);
 
         return $this;
     }

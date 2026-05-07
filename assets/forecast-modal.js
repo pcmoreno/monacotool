@@ -1,16 +1,12 @@
 import { apiFetch } from 'csrf';
 import { showToast, errorMessageFromResponse } from 'toast';
 import { icons, showDeleteConfirm } from 'delete-confirm';
+import { openModal, closeModal, isModalOpen } from 'modal';
 
-const openForecast = () => {
-    document.getElementById('forecast-modal').classList.remove('hidden');
-    document.getElementById('forecast-target-output').focus();
-};
+const openForecast = () => openModal('forecast-modal', 'forecast-target-output');
 
 const closeForecast = () => {
-    const modal = document.getElementById('forecast-modal');
-    if (!modal) return;
-    modal.classList.add('hidden');
+    closeModal('forecast-modal');
     const output = document.getElementById('forecast-target-output');
     const iterations = document.getElementById('forecast-target-iterations');
     if (output) output.value = '';
@@ -41,7 +37,8 @@ const submitForecast = async () => {
         } else {
             showToast(await errorMessageFromResponse(response, 'Could not run forecast.'));
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         showToast('Network error. Please try again.');
     } finally {
         btn.disabled = false;
@@ -49,7 +46,7 @@ const submitForecast = async () => {
 };
 
 const deleteForecast = (forecastId, row) => {
-    showDeleteConfirm(async () => {
+    showDeleteConfirm('Delete this forecast? This action cannot be undone.', async () => {
         try {
             const response = await apiFetch(`/forecast/${forecastId}`, { method: 'DELETE' });
 
@@ -68,15 +65,14 @@ const deleteForecast = (forecastId, row) => {
             } else {
                 showToast(await errorMessageFromResponse(response, 'Could not delete forecast.'));
             }
-        } catch {
+        } catch (e) {
+            if (!(e instanceof TypeError)) throw e;
             showToast('Network error. Please try again.');
         }
     });
 };
 
-const closeForecastDetail = () => {
-    document.getElementById('forecast-detail-modal')?.classList.add('hidden');
-};
+const closeForecastDetail = () => closeModal('forecast-detail-modal');
 
 const probabilityColor = (p) => {
     if (p <= 0.5) {
@@ -164,8 +160,7 @@ const renderSensitivityTable = (sensitivityTable, targetIterations, targetResult
 };
 
 const openForecastDetail = async (forecast) => {
-    const modal = document.getElementById('forecast-detail-modal');
-    modal.classList.remove('hidden');
+    openModal('forecast-detail-modal', 'close-forecast-detail-modal');
 
     document.getElementById('fd-created-at').textContent = forecast.createdAt;
     document.getElementById('fd-simulations').textContent = forecast.numberOfSimulations.toLocaleString();
@@ -182,6 +177,10 @@ const openForecastDetail = async (forecast) => {
     resultEl.textContent = (resultVal * 100).toFixed(1) + '%';
     resultEl.style.color = probabilityColor(resultVal);
 
+    const label = resultVal >= 0.7 ? 'Likely' : resultVal >= 0.4 ? 'Possible' : 'Unlikely';
+    const labelEl = document.getElementById('fd-result-label');
+    if (labelEl) labelEl.textContent = label;
+
     document.getElementById('fd-sensitivity-loading').classList.remove('hidden');
     document.getElementById('fd-sensitivity-table').classList.add('hidden');
 
@@ -197,20 +196,25 @@ const openForecastDetail = async (forecast) => {
             forecast.sensitivityTable = table;
             const tr = document.querySelector(`[data-forecast-id="${forecast.id}"]`);
             if (tr) {
-                const data = JSON.parse(tr.dataset.forecast);
-                data.sensitivityTable = table;
-                tr.dataset.forecast = JSON.stringify(data);
+                try {
+                    const data = JSON.parse(tr.dataset.forecast);
+                    data.sensitivityTable = table;
+                    tr.dataset.forecast = JSON.stringify(data);
+                } catch {
+                    showToast('Could not update forecast data.');
+                }
             }
             renderSensitivityTable(table, forecast.targetIterations, forecast.result ?? 0);
         } else {
             document.getElementById('fd-sensitivity-loading').textContent = 'Could not load sensitivity data.';
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         document.getElementById('fd-sensitivity-loading').textContent = 'Network error.';
     }
 };
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     if (e.target.closest('#open-forecast-modal')) { openForecast(); return; }
     if (e.target.closest('#close-forecast-modal')) { closeForecast(); return; }
     if (e.target.closest('#forecast-backdrop')) { closeForecast(); return; }
@@ -220,8 +224,12 @@ document.addEventListener('click', (e) => {
 
     const showBtn = e.target.closest('[data-show-forecast]');
     if (showBtn) {
-        const forecast = JSON.parse(showBtn.closest('tr').dataset.forecast);
-        openForecastDetail(forecast);
+        try {
+            const forecast = JSON.parse(showBtn.closest('tr').dataset.forecast);
+            openForecastDetail(forecast);
+        } catch {
+            showToast('Could not read forecast data.');
+        }
         return;
     }
 
@@ -229,18 +237,36 @@ document.addEventListener('click', (e) => {
     if (deleteBtn) {
         deleteForecast(deleteBtn.dataset.deleteForecast, deleteBtn.closest('tr'));
     }
+}
+
+function onKeydown(e) {
+    if (e.key === 'Escape') {
+        if (isModalOpen('forecast-detail-modal')) { closeForecastDetail(); return; }
+        if (isModalOpen('forecast-modal')) { closeForecast(); }
+    }
+}
+
+function onIterationChanged({ detail }) {
+    const btn = document.getElementById('open-forecast-modal');
+    if (!btn) return;
+    const enough = detail.count >= 2;
+    btn.disabled = !enough;
+    btn.title = enough ? '' : 'At least 2 iterations are required to run a forecast.';
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('iteration:changed', onIterationChanged);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
+    document.addEventListener('iteration:changed', onIterationChanged);
 });
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        if (!document.getElementById('forecast-detail-modal')?.classList.contains('hidden')) {
-            closeForecastDetail();
-            return;
-        }
-        if (!document.getElementById('forecast-modal')?.classList.contains('hidden')) {
-            closeForecast();
-        }
-    }
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('iteration:changed', onIterationChanged);
 });
 
 const addForecastRow = (forecast) => {
@@ -262,13 +288,15 @@ const addForecastRow = (forecast) => {
     magnifierBtn.type = 'button';
     magnifierBtn.dataset.showForecast = '';
     magnifierBtn.className = 'text-graphite-400 hover:text-graphite-600 transition';
-    magnifierBtn.innerHTML = icons.magnifier;
+    const magnifierIcon = icons.magnifier;
+    if (magnifierIcon) magnifierBtn.appendChild(magnifierIcon);
 
     const trashBtn = document.createElement('button');
     trashBtn.type = 'button';
     trashBtn.dataset.deleteForecast = forecast.id;
     trashBtn.className = 'text-graphite-400 hover:text-red-500 transition';
-    trashBtn.innerHTML = icons.trash;
+    const trashIcon = icons.trash;
+    if (trashIcon) trashBtn.appendChild(trashIcon);
 
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'flex items-center gap-2';

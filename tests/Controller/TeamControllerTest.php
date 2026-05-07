@@ -110,4 +110,117 @@ class TeamControllerTest extends AbstractControllerTest
 
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
+
+    // --- POST /team/{id}/invite ---
+
+    public function test_invite_requires_authentication(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Theta', $admin);
+
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_FOUND, $response->getStatusCode());
+        $this->assertStringContainsString('/login', $response->headers->get('Location'));
+    }
+
+    public function test_invite_forbidden_for_non_admin_member(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $member = $this->createVerifiedUser('member@example.com');
+        $team = $this->createTeamWithAdmin('Iota', $admin);
+        $this->addMember($team, $member, TeamRole::User);
+
+        $this->client->loginUser($member);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_204_for_admin(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Kappa', $admin);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_422_if_already_active_member(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $member = $this->createVerifiedUser('member@example.com');
+        $team = $this->createTeamWithAdmin('Lambda', $admin);
+        $this->addMember($team, $member, TeamRole::User);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Member',
+            'email' => 'member@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_204_if_already_pending(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Mu', $admin);
+        $pending = $this->createPendingInvitedUser('pending@example.com');
+        $this->createPendingMembership($team, $pending, 'existing-token');
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Pending User',
+            'email' => 'pending@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_422_for_invalid_email_format(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Nu', $admin);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Bad Email',
+            'email' => 'not-an-email',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
+
+    public function test_invite_reuses_rejected_membership_on_reinvite(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $rejected = $this->createVerifiedUser('rejected@example.com');
+        $team = $this->createTeamWithAdmin('Xi', $admin);
+        $this->createRejectedMembership($team, $rejected);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Rejected User',
+            'email' => 'rejected@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+
+        $this->em()->clear();
+        $memberships = $this->em()->getRepository(\App\Entity\Membership::class)->findBy(['user' => $rejected]);
+        $this->assertCount(1, $memberships);
+        $this->assertSame(\App\Enum\MembershipStatus::Pending, $memberships[0]->getStatus());
+    }
 }

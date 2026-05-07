@@ -79,14 +79,14 @@ class AccountControllerTest extends AbstractControllerTest
         $this->assertResponseRedirects('/login');
     }
 
-    public function test_verify_email_with_valid_token_redirects_to_team(): void
+    public function test_verify_email_with_valid_token_redirects_to_login(): void
     {
         $plainToken = bin2hex(random_bytes(32));
         $this->createUnverifiedUser('unverified@example.com', $plainToken);
 
         $this->client->request('GET', '/verify-email?token=' . $plainToken);
 
-        $this->assertResponseRedirects('/team');
+        $this->assertResponseRedirects('/login');
     }
 
     public function test_forgot_password_returns_200_regardless_of_email(): void

@@ -1,16 +1,12 @@
 import { apiFetch } from 'csrf';
+import { openModal, closeModal, isModalOpen } from 'modal';
 
 // --- Forgot password ---
 
-const openForgotModal = () => {
-    document.getElementById('forgot-password-modal').classList.remove('hidden');
-    document.getElementById('forgot-email').focus();
-};
+const openForgotModal = () => openModal('forgot-password-modal', 'forgot-email');
 
 const closeForgotModal = () => {
-    const modal = document.getElementById('forgot-password-modal');
-    if (!modal) return;
-    modal.classList.add('hidden');
+    closeModal('forgot-password-modal');
     const feedback = document.getElementById('forgot-feedback');
     if (feedback) { feedback.classList.add('hidden'); feedback.textContent = ''; }
     const email = document.getElementById('forgot-email');
@@ -38,7 +34,8 @@ const submitForgotPassword = async () => {
             document.getElementById('forgot-email').value = '';
         }
         feedback.classList.remove('hidden');
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         feedback.textContent = 'Something went wrong. Please try again.';
         feedback.classList.remove('hidden');
     } finally {
@@ -48,13 +45,10 @@ const submitForgotPassword = async () => {
 
 // --- Resend verification (login page) ---
 
-const openResendModal = () => {
-    document.getElementById('resend-verification-modal')?.classList.remove('hidden');
-    document.getElementById('resend-email')?.focus();
-};
+const openResendModal = () => openModal('resend-verification-modal', 'resend-email');
 
 const closeResendModal = () => {
-    document.getElementById('resend-verification-modal')?.classList.add('hidden');
+    closeModal('resend-verification-modal');
     const feedback = document.getElementById('resend-feedback');
     if (feedback) { feedback.classList.add('hidden'); feedback.textContent = ''; }
 };
@@ -79,7 +73,8 @@ const submitResend = async () => {
             feedback.textContent = 'If that email exists and is unverified, a new link has been sent.';
         }
         feedback.classList.remove('hidden');
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         feedback.textContent = 'Something went wrong. Please try again.';
         feedback.classList.remove('hidden');
     } finally {
@@ -93,8 +88,7 @@ const openResetModal = (token) => {
     const modal = document.getElementById('reset-password-modal');
     if (!modal) return;
     document.getElementById('reset-token').value = token;
-    modal.classList.remove('hidden');
-    document.getElementById('reset-password-input').focus();
+    openModal('reset-password-modal', 'reset-password-input');
 };
 
 const showResetErrors = (errors) => {
@@ -132,6 +126,7 @@ const submitResetPassword = async () => {
             success.textContent = data.message;
             success.classList.remove('hidden');
             btn.classList.add('hidden');
+            document.getElementById('reset-login-link')?.classList.remove('hidden');
             window.history.replaceState({}, '', '/login');
         } else {
             const errors = data.errors
@@ -139,7 +134,8 @@ const submitResetPassword = async () => {
                 ?? ['Something went wrong. Please try again.'];
             showResetErrors(errors);
         }
-    } catch {
+    } catch (e) {
+        if (!(e instanceof TypeError)) throw e;
         showResetErrors(['Something went wrong. Please try again.']);
     } finally {
         btn.disabled = false;
@@ -148,7 +144,7 @@ const submitResetPassword = async () => {
 
 // --- Event listeners ---
 
-document.addEventListener('click', (e) => {
+function onClick(e) {
     if (e.target.closest('#open-forgot-modal')) { openForgotModal(); return; }
     if (e.target.closest('#close-forgot-modal')) { closeForgotModal(); return; }
     if (e.target.closest('#forgot-backdrop')) { closeForgotModal(); return; }
@@ -160,16 +156,26 @@ document.addEventListener('click', (e) => {
     if (e.target.closest('#resend-submit')) { submitResend(); return; }
 
     if (e.target.closest('#reset-submit')) { submitResetPassword(); return; }
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (!document.getElementById('forgot-password-modal')?.classList.contains('hidden')) { closeForgotModal(); return; }
-    if (!document.getElementById('resend-verification-modal')?.classList.contains('hidden')) { closeResendModal(); return; }
-});
-
-// Open reset modal if token is present in URL
-const resetToken = new URLSearchParams(window.location.search).get('reset-token');
-if (resetToken) {
-    openResetModal(resetToken);
 }
+
+function onKeydown(e) {
+    if (e.key !== 'Escape') return;
+    if (isModalOpen('forgot-password-modal')) { closeForgotModal(); return; }
+    if (isModalOpen('resend-verification-modal')) { closeResendModal(); return; }
+}
+
+document.addEventListener('turbo:load', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeydown);
+
+    // Open reset modal if token is present in URL
+    const resetToken = new URLSearchParams(window.location.search).get('reset-token');
+    if (resetToken) openResetModal(resetToken);
+});
+
+document.addEventListener('turbo:before-cache', () => {
+    document.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeydown);
+});
