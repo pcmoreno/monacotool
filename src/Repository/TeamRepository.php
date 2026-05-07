@@ -59,7 +59,9 @@ class TeamRepository extends ServiceEntityRepository
             ->leftJoin('t.iterations', 'i')
             ->join('t.memberships', 'm')
             ->where('m.user = :user')
+            ->andWhere('m.status = :status')
             ->setParameter('user', $user)
+            ->setParameter('status', MembershipStatus::Active)
             ->getQuery()
             ->getResult();
     }

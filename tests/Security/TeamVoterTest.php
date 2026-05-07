@@ -114,6 +114,22 @@ class TeamVoterTest extends TestCase
         $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::VIEW);
     }
 
+    public function test_rejected_admin_cannot_edit(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Rejected);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::EDIT);
+    }
+
+    public function test_rejected_admin_cannot_delete(): void
+    {
+        $user = $this->user();
+        $team = $this->teamWithMemberStatus($user, TeamRole::Admin, MembershipStatus::Rejected);
+
+        $this->assertVote(VoterInterface::ACCESS_DENIED, $user, $team, TeamVoter::DELETE);
+    }
+
     public function test_pending_admin_cannot_edit(): void
     {
         $user = $this->user();

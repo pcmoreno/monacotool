@@ -250,6 +250,57 @@ class InviteControllerTest extends AbstractControllerTest
         $this->assertSelectorTextContains('p', 'invalid');
     }
 
+    public function test_accept_post_shows_invalid_when_wrong_user_posts(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Omicron', $admin);
+        $invitedUser = $this->createVerifiedUser('invited@example.com');
+        $wrongUser = $this->createVerifiedUser('wrong@example.com');
+        $this->createPendingMembership($team, $invitedUser, 'wrong-post-token');
+
+        $this->client->loginUser($invitedUser);
+        $crawler = $this->client->request('GET', '/invite/wrong-post-token/accept');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->loginUser($wrongUser);
+        $this->client->request('POST', '/invite/wrong-post-token/accept', ['_token' => $csrfToken]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'invalid');
+    }
+
+    public function test_reject_post_shows_invalid_when_wrong_user_posts(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Pi', $admin);
+        $invitedUser = $this->createVerifiedUser('invited@example.com');
+        $wrongUser = $this->createVerifiedUser('wrong@example.com');
+        $this->createPendingMembership($team, $invitedUser, 'reject-wrong-token');
+
+        $this->client->loginUser($invitedUser);
+        $crawler = $this->client->request('GET', '/invite/reject-wrong-token/reject');
+        $csrfToken = $crawler->filter('input[name="_token"]')->attr('value');
+
+        $this->client->loginUser($wrongUser);
+        $this->client->request('POST', '/invite/reject-wrong-token/reject', ['_token' => $csrfToken]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('p', 'invalid');
+    }
+
+    public function test_reject_redirects_unauthenticated_user_to_login(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Rho', $admin);
+        $member = $this->createVerifiedUser('rho@example.com');
+        $this->createPendingMembership($team, $member, 'unauthed-reject-token');
+
+        $this->client->request('GET', '/invite/unauthed-reject-token/reject');
+
+        $this->assertSame(Response::HTTP_FOUND, $this->client->getResponse()->getStatusCode());
+        $this->assertStringContainsString('/login', $this->client->getResponse()->headers->get('Location'));
+    }
+
     // --- pending membership with non-admin member should not grant team access ---
 
     public function test_pending_member_cannot_access_team(): void

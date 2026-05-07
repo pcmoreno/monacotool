@@ -183,6 +183,21 @@ abstract class AbstractControllerTest extends WebTestCase
         return $membership;
     }
 
+    protected function createRejectedMembership(Team $team, User $user): Membership
+    {
+        $membership = new Membership();
+        $membership->setUser($user);
+        $membership->setTeam($team);
+        $membership->setRole(TeamRole::User);
+        $membership->setStatus(MembershipStatus::Rejected);
+
+        $em = $this->em();
+        $em->persist($membership);
+        $em->flush();
+
+        return $membership;
+    }
+
     protected function createExpiredMembership(Team $team, User $user, string $plainToken): Membership
     {
         $membership = new Membership();

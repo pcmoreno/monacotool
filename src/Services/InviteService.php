@@ -34,7 +34,7 @@ final class InviteService
     {
         $email = mb_strtolower($email);
 
-        $this->guardNotAlreadyPendingOrActiveMember($team, $email);
+        $this->guardNotAlreadyActiveMember($team, $email);
 
         $user = $this->userRepository->findOneBy(['email' => $email]);
         $isNewUser = $user === null;
@@ -50,8 +50,8 @@ final class InviteService
         $plainToken = $this->generateToken();
         $hashedToken = hash('sha256', $plainToken);
 
-        // Reuse an existing rejected row to avoid hitting the unique (user, team) constraint
-        $membership = $this->findRejectedMembership($team, $email) ?? new Membership();
+        // Reuse an existing rejected/pending row to avoid hitting the unique (user, team) constraint
+        $membership = $this->findReusableMembership($team, $email) ?? new Membership();
         $membership->setUser($user);
         $membership->setTeam($team);
         $membership->setRole(TeamRole::User);
@@ -112,33 +112,18 @@ final class InviteService
         $this->membershipRepository->flush();
     }
 
-    private function guardNotAlreadyPendingOrActiveMember(Team $team, string $email): void
+    private function guardNotAlreadyActiveMember(Team $team, string $email): void
     {
         $existing = $this->membershipRepository->findActiveOrPendingByTeamAndEmail($team, $email);
 
-        if ($existing === null) {
-            return;
+        if ($existing !== null && $existing->getStatus() === MembershipStatus::Active) {
+            throw new AlreadyMemberException('This user is already a member of this team.');
         }
-
-        match ($existing->getStatus()) {
-            MembershipStatus::Active => throw new AlreadyMemberException('This user is already a member of this team.'),
-            MembershipStatus::Pending => throw new AlreadyMemberException('This user has already been invited.'),
-            default => null,
-        };
     }
 
-    private function findRejectedMembership(Team $team, string $email): ?Membership
+    private function findReusableMembership(Team $team, string $email): ?Membership
     {
-        foreach ($team->getMemberships() as $membership) {
-            if (
-                $membership->getUser()->getEmail() === $email
-                && $membership->getStatus() === MembershipStatus::Rejected
-            ) {
-                return $membership;
-            }
-        }
-
-        return null;
+        return $this->membershipRepository->findRejectedOrPendingByTeamAndEmail($team, $email);
     }
 
     private function sendNewUserInviteEmail(User $user, Team $team, string $plainToken, User $inviter): void
@@ -155,7 +140,7 @@ final class InviteService
                 ->to($user->getEmail())
                 ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-new-user.html.twig')
-                ->context(['user' => $user, 'team' => $team, 'url' => $url, 'inviterName' => $inviter->getName() ?? $inviter->getEmail()]),
+                ->context(['user' => $user, 'team' => $team, 'url' => $url, 'inviterName' => $inviter->getName() ?? $inviter->getEmail(), 'expiryDays' => $this->inviteTokenExpiryDays]),
         );
     }
 
@@ -179,7 +164,7 @@ final class InviteService
                 ->to($user->getEmail())
                 ->subject('You\'ve been invited to join ' . str_replace(["\r", "\n"], '', $team->getName()) . ' on MonacoTool')
                 ->htmlTemplate('email/invite-existing-user.html.twig')
-                ->context(['user' => $user, 'team' => $team, 'acceptUrl' => $acceptUrl, 'rejectUrl' => $rejectUrl, 'inviterName' => $inviter->getName() ?? $inviter->getEmail()]),
+                ->context(['user' => $user, 'team' => $team, 'acceptUrl' => $acceptUrl, 'rejectUrl' => $rejectUrl, 'inviterName' => $inviter->getName() ?? $inviter->getEmail(), 'expiryDays' => $this->inviteTokenExpiryDays]),
         );
     }
 

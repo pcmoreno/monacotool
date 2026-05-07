@@ -157,7 +157,7 @@ class TeamControllerTest extends AbstractControllerTest
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
     }
 
-    public function test_invite_returns_204_if_already_active_member(): void
+    public function test_invite_returns_422_if_already_active_member(): void
     {
         $admin = $this->createVerifiedUser('admin@example.com');
         $member = $this->createVerifiedUser('member@example.com');
@@ -170,7 +170,7 @@ class TeamControllerTest extends AbstractControllerTest
             'email' => 'member@example.com',
         ]);
 
-        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
     }
 
     public function test_invite_returns_204_if_already_pending(): void
@@ -187,5 +187,40 @@ class TeamControllerTest extends AbstractControllerTest
         ]);
 
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+    }
+
+    public function test_invite_returns_422_for_invalid_email_format(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $team = $this->createTeamWithAdmin('Nu', $admin);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Bad Email',
+            'email' => 'not-an-email',
+        ]);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
+
+    public function test_invite_reuses_rejected_membership_on_reinvite(): void
+    {
+        $admin = $this->createVerifiedUser('admin@example.com');
+        $rejected = $this->createVerifiedUser('rejected@example.com');
+        $team = $this->createTeamWithAdmin('Xi', $admin);
+        $this->createRejectedMembership($team, $rejected);
+
+        $this->client->loginUser($admin);
+        $response = $this->apiPost('/team/' . $team->getId() . '/invite', [
+            'name' => 'Rejected User',
+            'email' => 'rejected@example.com',
+        ]);
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+
+        $this->em()->clear();
+        $memberships = $this->em()->getRepository(\App\Entity\Membership::class)->findBy(['user' => $rejected]);
+        $this->assertCount(1, $memberships);
+        $this->assertSame(\App\Enum\MembershipStatus::Pending, $memberships[0]->getStatus());
     }
 }

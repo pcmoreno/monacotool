@@ -36,6 +36,7 @@ services:
         arguments:
             $maxAdminTeams: '%max_admin_teams%'
 
+    # NOTE: 'main' encodes the firewall name — if the firewall is renamed, this alias breaks silently at runtime.
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator: '@security.authenticator.form_login.main'
 
     App\Services\Forecaster\BasicForecaster:

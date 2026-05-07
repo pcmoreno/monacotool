@@ -40,6 +40,21 @@ class MembershipRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findRejectedOrPendingByTeamAndEmail(Team $team, string $email): ?Membership
+    {
+        return $this->createQueryBuilder('m')
+            ->join('m.user', 'u')
+            ->where('m.team = :team')
+            ->andWhere('u.email = :email')
+            ->andWhere('m.status IN (:statuses)')
+            ->setParameter('team', $team)
+            ->setParameter('email', $email)
+            ->setParameter('statuses', [MembershipStatus::Rejected, MembershipStatus::Pending])
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function save(Membership $membership): void
     {
         $this->getEntityManager()->persist($membership);

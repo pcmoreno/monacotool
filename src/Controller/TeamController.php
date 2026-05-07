@@ -90,8 +90,8 @@ final class TeamController extends AbstractController
 
         try {
             $this->inviteService->invite($team, $inviteRequest->name, $inviteRequest->email, $user);
-        } catch (AlreadyMemberException) {
-            // silently succeed — returning 422 leaks membership/pending status to the caller
+        } catch (AlreadyMemberException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (TransportExceptionInterface) {
             return new JsonResponse(['error' => 'Invitation could not be sent due to a mail delivery error. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
