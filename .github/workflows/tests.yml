@@ -2,7 +2,6 @@ name: Tests
 
 on:
   push:
-  pull_request:
 
 jobs:
   phpunit:
@@ -24,20 +23,23 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-    env:
-      APP_ENV: test
-      APP_SECRET: test_secret_not_used_in_production
-      DATABASE_URL: mysql://local_user:local_db@127.0.0.1:3306/monacotool?serverVersion=8.0.32&charset=utf8mb4
-      MAILER_DSN: "null://null"
-      MAILER_FROM: noreply@test.local
-      INVITE_TOKEN_EXPIRY_DAYS: 2
-      NUMBER_OF_SIMULATIONS: 500
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Create .env
-        run: echo "APP_ENV=test" > .env
+        run: |
+          cat > .env <<'EOF'
+          APP_ENV=test
+          APP_SECRET=test_secret_not_used_in_production
+          APP_SHARE_DIR=var/share
+          DEFAULT_URI=http://127.0.0.1
+          DATABASE_URL=mysql://local_user:local_db@127.0.0.1:3306/monacotool?serverVersion=8.0.32&charset=utf8mb4
+          MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+          MAILER_DSN=null://null
+          MAILER_FROM=noreply@test.local
+          INVITE_TOKEN_EXPIRY_DAYS=2
+          NUMBER_OF_SIMULATIONS=500
+          EOF
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
