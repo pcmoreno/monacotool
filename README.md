@@ -7,7 +7,7 @@ A Monte Carlo forecasting tool for agile software teams. Given a team's historic
 ## Tech stack
 
 - **Backend:** Symfony 7.4, Doctrine ORM 3, PHP 8.2+
-- **Frontend:** Tailwind CSS v4 (via `symfonycasts/tailwind-bundle`), Vanilla JS, Hotwire Turbo (via `symfony/ux-turbo`), Asset Mapper / importmap (no Webpack/Vite)
+- **Frontend:** Tailwind CSS v4 (via `symfonycasts/tailwind-bundle`), Hotwire Stimulus (via `symfony/stimulus-bundle`), Hotwire Turbo (via `symfony/ux-turbo`), Twig Components (via `symfony/ux-twig-component`), Asset Mapper / importmap (no Webpack/Vite)
 - **Database:** Any Doctrine-supported RDBMS (development default: MySQL 8)
 - **Mail:** Symfony Mailer (Mailpit recommended for local development)
 - **QA:** PHPUnit 11, PHPStan 2 (level 6), PHP-CS-Fixer 3
