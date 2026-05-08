@@ -1,0 +1,28 @@
+<tr id="iteration-{{ iteration.id }}" data-iteration-id="{{ iteration.id }}">
+    <td class="py-2.5 px-1">
+        <form method="post" action="{{ path('app_iteration_delete', {id: iteration.id}) }}"
+              data-turbo-stream
+              data-turbo-confirm="Delete this iteration? This action cannot be undone.">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="text-graphite-400 hover:text-red-500 transition" aria-label="Delete iteration">
+                {% include 'icons/trash.html.twig' %}
+            </button>
+        </form>
+    </td>
+    <td id="iteration-{{ iteration.id }}-end_date"
+        class="py-2.5 text-graphite-600 cursor-pointer hover:bg-primary-50 rounded px-1 transition"
+        data-editable
+        data-field="end_date"
+        data-iteration-id="{{ iteration.id }}"
+        data-value="{{ iteration.endDate|date('Y-m-d') }}">
+        {{ iteration.endDate|date('Y-m-d') }}
+    </td>
+    <td id="iteration-{{ iteration.id }}-output"
+        class="py-2.5 text-graphite-900 font-semibold text-right cursor-pointer hover:bg-primary-50 rounded px-1 transition"
+        data-editable
+        data-field="output"
+        data-iteration-id="{{ iteration.id }}"
+        data-value="{{ iteration.output }}">
+        {{ iteration.output }}
+    </td>
+</tr>

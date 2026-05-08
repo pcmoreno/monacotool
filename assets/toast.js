@@ -9,6 +9,7 @@ export const showToast = (message, type = 'error') => {
 
     const toast = document.createElement('div');
     toast.className = `rounded-md px-4 py-3 text-sm shadow-lg ring-1 ${variants[type] ?? variants.error}`;
+    toast.dataset.turboTemporary = '';
     toast.textContent = message;
     container.appendChild(toast);
 

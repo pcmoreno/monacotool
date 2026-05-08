@@ -1,26 +1,20 @@
-const focusStack = [];
-
-export function openModal(id, focusId = null) {
-    const modal = document.getElementById(id);
-    if (!modal) return;
-    focusStack.push(document.activeElement);
-    modal.setAttribute('aria-hidden', 'false');
-    modal.classList.remove('hidden');
-    const target = focusId
-        ? document.getElementById(focusId)
-        : modal.querySelector('button:not([disabled]), input:not([disabled]), [tabindex="0"]');
+export const openModal = (id, focusId) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.setAttribute('aria-hidden', 'false');
+    const target = focusId ? document.getElementById(focusId) : el.querySelector('button, input, [tabindex="0"]');
     target?.focus();
-}
+};
 
-export function closeModal(id) {
-    const modal = document.getElementById(id);
-    if (!modal) return;
-    modal.setAttribute('aria-hidden', 'true');
-    modal.classList.add('hidden');
-    const prev = focusStack.pop();
-    if (prev && document.contains(prev)) prev.focus();
-}
+export const closeModal = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('hidden');
+    el.setAttribute('aria-hidden', 'true');
+};
 
-export function isModalOpen(id) {
-    return !document.getElementById(id)?.classList.contains('hidden');
-}
+export const isModalOpen = (id) => {
+    const el = document.getElementById(id);
+    return !!el && !el.classList.contains('hidden');
+};
