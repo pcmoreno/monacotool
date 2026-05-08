@@ -26,7 +26,7 @@
             {% for i in iterations %}
                 {% set isTarget = i == targetIterations %}
                 {% set isInvalid = i <= 0 %}
-                {% set val = isTarget ? targetResult : (sensitivityTable[i|string] ?? null) %}
+                {% set val = isTarget ? targetResult : (sensitivityTable[i ~ ''] ?? null) %}
                 {% if isInvalid %}
                     {% set bgColor = '#1a1a1a' %}
                 {% elseif val <= 0.5 %}
