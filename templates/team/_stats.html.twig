@@ -1,0 +1,10 @@
+<dl id="team-stats" class="space-y-6">
+    <div>
+        <dt class="text-sm text-graphite-500">Velocity (avg output)</dt>
+        <dd id="stat-velocity" class="text-3xl font-bold text-graphite-900 mt-1">{{ outputAverage|number_format(1) }}</dd>
+    </div>
+    <div>
+        <dt class="text-sm text-graphite-500">Standard Deviation</dt>
+        <dd id="stat-std-dev" class="text-3xl font-bold text-graphite-900 mt-1">{{ standardDeviation|number_format(3) }}</dd>
+    </div>
+</dl>

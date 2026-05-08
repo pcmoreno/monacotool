@@ -1,0 +1,13 @@
+<li class="flex items-center justify-between">
+    <span class="text-sm {{ membership.status.value == 'active' ? 'text-graphite-700' : 'text-graphite-400' }}">
+        {{ membership.user.name ?? membership.user.email }}
+    </span>
+    <div class="flex items-center gap-2">
+        {% if membership.status.value == 'pending' %}
+            <span class="text-xs text-amber-500 font-medium">Invited</span>
+        {% elseif membership.status.value == 'rejected' %}
+            <span class="text-xs text-red-400 font-medium">Declined</span>
+        {% endif %}
+        <span class="text-xs text-graphite-400 font-medium">{{ membership.role.name }}</span>
+    </div>
+</li>

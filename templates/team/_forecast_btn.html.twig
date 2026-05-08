@@ -1,0 +1,10 @@
+<span id="forecast-btn">
+<button id="open-forecast-modal" type="button"
+        {% if iterationCount < 2 %}
+            disabled
+            title="At least 2 iterations are required to run a forecast."
+        {% endif %}
+        class="rounded-md bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-primary-500 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-600">
+    Request Forecast
+</button>
+</span>

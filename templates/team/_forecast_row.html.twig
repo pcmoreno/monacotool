@@ -1,0 +1,31 @@
+<tr id="forecast-{{ forecast.id }}" data-forecast-id="{{ forecast.id }}"
+    data-forecast='{{ {
+        id: forecast.id,
+        createdAt: forecast.createdAt|date('Y-m-d H:i'),
+        targetOutput: forecast.targetOutput,
+        targetIterations: forecast.targetIterations,
+        numberOfSimulations: forecast.numberOfSimulations,
+        result: forecast.result,
+        teamStatsSnapshot: forecast.teamStatsSnapshot,
+        sensitivityTable: forecast.sensitivityTable
+    }|json_encode|e('html_attr') }}'>
+    <td class="py-2.5">
+        <div class="flex items-center gap-2">
+            <button type="button" data-show-forecast class="text-graphite-400 hover:text-graphite-600 transition">
+                {% include 'icons/magnifier.html.twig' %}
+            </button>
+            <form method="post" action="{{ path('app_forecast_delete', {id: forecast.id}) }}"
+                  data-turbo-stream
+                  data-turbo-confirm="Delete this forecast? This action cannot be undone.">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="text-graphite-400 hover:text-red-500 transition" aria-label="Delete forecast">
+                    {% include 'icons/trash.html.twig' %}
+                </button>
+            </form>
+        </div>
+    </td>
+    <td class="py-2.5 text-graphite-600">{{ forecast.createdAt|date('Y-m-d H:i') }}</td>
+    <td class="py-2.5 text-graphite-900 font-semibold text-right">{{ forecast.targetOutput }}</td>
+    <td class="py-2.5 text-graphite-900 font-semibold text-right">{{ forecast.targetIterations }}</td>
+    <td class="py-2.5 text-graphite-900 font-semibold text-right">{{ forecast.result is not null ? (forecast.result * 100)|number_format(1) ~ '%' : '—' }}</td>
+</tr>

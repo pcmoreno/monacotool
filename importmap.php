@@ -22,12 +22,6 @@ return [
     'csrf' => [
         'path' => './assets/csrf.js',
     ],
-    'modal' => [
-        'path' => './assets/modal.js',
-    ],
-    'delete-confirm' => [
-        'path' => './assets/delete-confirm.js',
-    ],
     'toast' => [
         'path' => './assets/toast.js',
     ],

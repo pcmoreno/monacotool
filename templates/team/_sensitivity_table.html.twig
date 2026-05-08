@@ -1,0 +1,46 @@
+{% set iterations = range(targetIterations - 5, targetIterations + 5) %}
+{% set sooner = iterations|filter(i => i < targetIterations) %}
+{% set later = iterations|filter(i => i > targetIterations) %}
+<table id="fd-sensitivity-table" class="w-full text-sm rounded-lg overflow-hidden">
+    <thead>
+        <tr>
+            {% if sooner|length > 0 %}
+                <th colspan="{{ sooner|length }}" class="px-3 py-1 text-center text-xs font-semibold text-graphite-400 border-b border-graphite-100">Sooner</th>
+            {% endif %}
+            <th class="px-3 py-1 text-center text-xs font-bold text-graphite-900 border-x-2 border-t-2 border-graphite-300">{{ targetIterations }}</th>
+            {% if later|length > 0 %}
+                <th colspan="{{ later|length }}" class="px-3 py-1 text-center text-xs font-semibold text-graphite-400 border-b border-graphite-100">Later</th>
+            {% endif %}
+        </tr>
+        <tr>
+            {% for i in iterations %}
+                {% set isTarget = i == targetIterations %}
+                <th class="px-2 py-1 text-center text-xs font-medium{{ isTarget ? ' border-x-2 border-b-2 border-graphite-300' : ' text-graphite-400' }}">
+                    {{ (not isTarget and i > 0) ? i : '' }}
+                </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            {% for i in iterations %}
+                {% set isTarget = i == targetIterations %}
+                {% set isInvalid = i <= 0 %}
+                {% set val = isTarget ? targetResult : (sensitivityTable[i|string] ?? null) %}
+                {% if isInvalid %}
+                    {% set bgColor = '#1a1a1a' %}
+                {% elseif val <= 0.5 %}
+                    {% set bgColor = 'hsl(0, 65%, ' ~ (28 + (val / 0.5) * 14)|number_format(1) ~ '%)' %}
+                {% elseif val >= 0.9 %}
+                    {% set bgColor = 'hsl(120, 65%, ' ~ (42 - ((val - 0.9) / 0.1) * 10)|number_format(1) ~ '%)' %}
+                {% else %}
+                    {% set bgColor = 'hsl(' ~ ((val - 0.5) / 0.4 * 120)|number_format(1) ~ ', 65%, 42%)' %}
+                {% endif %}
+                <td class="px-2 py-2 text-center text-xs font-bold text-white{{ isTarget ? ' border-x-2 border-b-2 border-graphite-300' : '' }}"
+                    style="background-color: {{ bgColor }};">
+                    {{ isInvalid ? '✕' : ((val * 100)|number_format(1) ~ '%') }}
+                </td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>

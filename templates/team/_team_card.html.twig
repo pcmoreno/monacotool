@@ -1,0 +1,7 @@
+<a href="{{ path('app_team_show', {id: team.id}) }}"
+   class="block rounded-xl bg-surface shadow ring-1 ring-graphite-200 p-6 hover:shadow-md transition">
+    <h2 class="text-lg font-semibold text-graphite-900">{{ team.name }}</h2>
+    <p class="text-sm text-graphite-500 mt-1">
+        {{ team.iterations|length }} iteration{{ team.iterations|length != 1 ? 's' : '' }}
+    </p>
+</a>

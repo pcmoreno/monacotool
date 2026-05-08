@@ -3,7 +3,7 @@
 {% block title %}Teams — MonacoTool{% endblock %}
 
 {% block body %}
-<div class="min-h-full px-6 py-12">
+<div class="min-h-full px-6 py-12" data-controller="team-create">
     <div class="max-w-4xl mx-auto">
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-graphite-900">Teams — {{ app.user.name ?? app.user.email }}</h1>
@@ -28,13 +28,7 @@
             {% else %}
                 <div id="teams-grid" class="grid gap-4 sm:grid-cols-2">
                     {% for team in teams %}
-                        <a href="{{ path('app_team_show', {id: team.id}) }}"
-                           class="block rounded-xl bg-surface shadow ring-1 ring-graphite-200 p-6 hover:shadow-md transition">
-                            <h2 class="text-lg font-semibold text-graphite-900">{{ team.name }}</h2>
-                            <p class="text-sm text-graphite-500 mt-1">
-                                {{ team.iterations|length }} iteration{{ team.iterations|length != 1 ? 's' : '' }}
-                            </p>
-                        </a>
+                        {{ include('team/_team_card.html.twig', { team: team }) }}
                     {% endfor %}
                 </div>
             {% endif %}
@@ -65,10 +59,11 @@
 </div>
 {% endif %}
 
-<div id="team-create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="team-create-heading" aria-hidden="true">
-    <div id="team-create-backdrop" class="absolute inset-0 bg-black/50"></div>
+<div id="team-create-modal" data-controller="modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="team-create-heading" aria-hidden="true">
+    <div id="team-create-backdrop" data-action="click->modal#close" class="absolute inset-0 bg-black/50"></div>
     <div class="relative bg-surface rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
-        <button id="close-team-create-modal" type="button"
+        <button id="close-team-create-modal" type="button" data-action="modal#close"
                 class="absolute top-4 right-4 text-graphite-400 hover:text-graphite-600 transition text-xl leading-none">&times;</button>
         <h2 id="team-create-heading" class="text-xl font-bold text-graphite-900 mb-6">Create a new team</h2>
         <div class="space-y-4">
@@ -85,5 +80,16 @@
     </div>
 </div>
 
-<script type="module" src="{{ asset('team-create.js') }}"></script>
+{% endblock %}
+
+{% block stream_create_team %}
+{% if isFirstTeam %}
+<twig:Turbo:Stream:Replace target="#teams-empty">
+    <div id="teams-grid" class="grid gap-4 sm:grid-cols-2">
+    </div>
+</twig:Turbo:Stream:Replace>
+{% endif %}
+<twig:Turbo:Stream:Prepend target="#teams-grid">
+    {{ include('team/_team_card.html.twig', { team: team }) }}
+</twig:Turbo:Stream:Prepend>
 {% endblock %}

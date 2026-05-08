@@ -30,7 +30,7 @@ final class InviteService
     ) {
     }
 
-    public function invite(Team $team, string $name, string $email, User $inviter): void
+    public function invite(Team $team, string $name, string $email, User $inviter): Membership
     {
         $email = mb_strtolower($email);
 
@@ -71,6 +71,8 @@ final class InviteService
         } else {
             $this->sendExistingUserInviteEmail($user, $team, $plainToken, $inviter);
         }
+
+        return $membership;
     }
 
     public function completeSetup(Membership $membership, string $name, string $plainPassword): void
