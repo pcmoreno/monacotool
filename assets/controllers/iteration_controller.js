@@ -29,8 +29,8 @@ export default class extends Controller {
         const trigger = tbody.querySelector('#add-iteration-trigger');
         const rows = Array.from(tbody.querySelectorAll('tr[data-iteration-id]'));
         rows.sort((a, b) =>
-            a.querySelector('[data-field="end_date"]').dataset.value
-                .localeCompare(b.querySelector('[data-field="end_date"]').dataset.value)
+            b.querySelector('[data-field="end_date"]').dataset.value
+                .localeCompare(a.querySelector('[data-field="end_date"]').dataset.value)
         );
         rows.forEach(row => tbody.insertBefore(row, trigger));
     }

@@ -108,7 +108,7 @@ export default class extends Controller {
         resultEl.style.color = this._probabilityColor(resultVal);
 
         const labelEl = document.getElementById('fd-result-label');
-        if (labelEl) labelEl.textContent = resultVal >= 0.7 ? 'Likely' : resultVal >= 0.4 ? 'Possible' : 'Unlikely';
+        if (labelEl) labelEl.textContent = resultVal >= 0.9 ? 'Likely' : resultVal >= 0.5 ? 'Possible' : 'Unlikely';
 
         const loading = document.getElementById('fd-sensitivity-loading');
         if (loading) loading.classList.remove('hidden');
