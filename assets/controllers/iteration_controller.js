@@ -16,11 +16,11 @@ export default class extends Controller {
     };
 
     connect() {
-        this.element.addEventListener('click', this._onClick);
+        document.addEventListener('click', this._onClick);
     }
 
     disconnect() {
-        this.element.removeEventListener('click', this._onClick);
+        document.removeEventListener('click', this._onClick);
     }
 
     _sortByDate() {
