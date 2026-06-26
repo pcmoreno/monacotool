@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
@@ -24,10 +24,10 @@ final class AccountController extends AbstractController
 {
     public function __construct(
         private readonly AccountService $accountService,
-        private readonly RateLimiterFactory $registerLimiter,
-        private readonly RateLimiterFactory $resendVerificationLimiter,
-        private readonly RateLimiterFactory $forgotPasswordLimiter,
-        private readonly RateLimiterFactory $resetPasswordLimiter,
+        private readonly RateLimiterFactoryInterface $registerLimiter,
+        private readonly RateLimiterFactoryInterface $resendVerificationLimiter,
+        private readonly RateLimiterFactoryInterface $forgotPasswordLimiter,
+        private readonly RateLimiterFactoryInterface $resetPasswordLimiter,
     ) {
     }
 

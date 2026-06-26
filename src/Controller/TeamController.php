@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
@@ -37,7 +37,7 @@ final class TeamController extends AbstractController
         private readonly InviteService $inviteService,
         private readonly TeamService $teamService,
         private readonly TeamStatisticsService $teamStatisticsService,
-        private readonly RateLimiterFactory $inviteLimiter,
+        private readonly RateLimiterFactoryInterface $inviteLimiter,
     ) {
     }
 
