@@ -35,7 +35,7 @@ class TeamVoterTest extends TestCase
 
     public function test_denies_when_token_has_no_user(): void
     {
-        $token = $this->createMock(TokenInterface::class);
+        $token = $this->createStub(TokenInterface::class);
         $token->method('getUser')->willReturn(null);
 
         $this->assertSame(VoterInterface::ACCESS_DENIED, $this->voter->vote($token, new Team(), [TeamVoter::VIEW]));
@@ -169,7 +169,7 @@ class TeamVoterTest extends TestCase
 
     private function assertVote(int $expected, User|\stdClass $user, object $subject, string $attribute): void
     {
-        $token = $this->createMock(TokenInterface::class);
+        $token = $this->createStub(TokenInterface::class);
         $token->method('getUser')->willReturn($user);
 
         $this->assertSame($expected, $this->voter->vote($token, $subject, [$attribute]));

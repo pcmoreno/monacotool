@@ -13,7 +13,7 @@ class BasicForecasterTest extends TestCase
 {
     private function makeForecaster(float $mean, float $stdDev, int $simulations = 2000): BasicForecaster
     {
-        $stats = $this->createMock(TeamStatisticsService::class);
+        $stats = $this->createStub(TeamStatisticsService::class);
         $stats->method('getOutputAverage')->willReturn($mean);
         $stats->method('getSampleStandardDeviation')->willReturn($stdDev);
 
