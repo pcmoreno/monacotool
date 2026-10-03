@@ -24,7 +24,7 @@ class Team
      * @var Collection<int, Iteration>
      */
     #[ORM\OneToMany(targetEntity: Iteration::class, mappedBy: 'team', cascade: ['remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['endDate' => 'DESC'])]
+    #[ORM\OrderBy(['endDate' => \SortDirection::Descending])]
     private Collection $iterations;
 
     /**
