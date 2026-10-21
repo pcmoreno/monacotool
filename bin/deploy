@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# Production deploy for monacotool. Run on the VPS as a sudo-capable user:
+#
+#   /var/www/monacotool/app/bin/deploy
+#
+# Pulls master, installs dependencies, builds assets, runs migrations,
+# restarts the Messenger worker and checks the site responds.
+# PHP / OS package upgrades are NOT handled here.
+
+set -euo pipefail
+
+APP_DIR=/var/www/monacotool/app
+APP_USER=monacotool
+WORKER=monacotool-worker
+SITE_URL=https://monacotool.pcmoreno.eu
+SELF=$(readlink -f "$0")
+
+as_app() { sudo -u "$APP_USER" -H "$@"; }
+console() { as_app php bin/console "$@"; }
+step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
+fail() { printf '\n\033[1;31mDEPLOY FAILED: %s\033[0m\n' "$*" >&2; exit 1; }
+
+main() {
+    cd "$APP_DIR"
+
+    if [[ -z "${DEPLOY_REEXEC:-}" ]]; then
+        step "Checking working tree"
+        if [[ -n "$(as_app git status --porcelain --untracked-files=no)" ]]; then
+            as_app git status --short --untracked-files=no
+            fail "local changes on the server; resolve them first"
+        fi
+
+        old_rev=$(as_app git rev-parse --short HEAD)
+        script_hash=$(sha256sum "$SELF" | cut -d' ' -f1)
+
+        step "Pulling master"
+        as_app git pull --ff-only
+
+        # The pull may have updated this script; run the new version instead.
+        if [[ "$(sha256sum "$SELF" | cut -d' ' -f1)" != "$script_hash" ]]; then
+            step "bin/deploy changed, re-running new version"
+            DEPLOY_REEXEC=1 DEPLOY_OLD_REV="$old_rev" exec "$SELF" "$@"
+        fi
+    else
+        old_rev=${DEPLOY_OLD_REV:-unknown}
+    fi
+
+    new_rev=$(as_app git rev-parse --short HEAD)
+
+    step "Installing composer dependencies"
+    as_app composer install --no-dev --optimize-autoloader --no-scripts
+
+    # Must run before tailwind:build: the prod container caches binary_version.
+    step "Clearing cache"
+    console cache:clear
+
+    step "Installing importmap packages"
+    console importmap:install
+
+    step "Building Tailwind CSS"
+    tailwind_out=$(console tailwind:build --minify 2>&1) || { echo "$tailwind_out"; fail "tailwind:build"; }
+    echo "$tailwind_out"
+    tailwind_version=$(grep -o 'tailwindcss v[0-9.]*' <<<"$tailwind_out" | head -1 || true)
+
+    step "Compiling assets"
+    console asset-map:compile
+
+    step "Running migrations"
+    console doctrine:migrations:migrate -n
+
+    step "Clearing cache"
+    console cache:clear
+
+    step "Restarting $WORKER"
+    sudo systemctl restart "$WORKER"
+    sleep 2
+    systemctl is-active --quiet "$WORKER" || fail "$WORKER is not active"
+
+    step "Checking $SITE_URL"
+    status=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL") || true
+    [[ "$status" == 200 ]] || fail "site returned HTTP ${status:-none}"
+
+    printf '\n\033[1;32mDeployed %s -> %s\033[0m\n' "$old_rev" "$new_rev"
+    printf '  tailwind: %s\n  worker:   active\n  site:     HTTP %s\n' "${tailwind_version:-unknown}" "$status"
+}
+
+# exit on the same line so bash never reads past here if the file changes mid-run
+main "$@"; exit
